@@ -1,0 +1,46 @@
+-- Mergesort
+
+import std
+
+let reverse xs = 
+  if == 0 (len xs); then
+    xs;
+  else
+   + (reverse (tail xs)) (singleton (head xs));
+
+let take count xs =
+  if == count 0; then 
+    list;
+  else
+    cons (head xs) (take (- count 1) (tail xs));
+
+
+let skip count xs =
+  if == count 0; 
+    then xs;
+  else
+    skip (- count 1) (tail xs);
+
+
+
+let merge xs ys =
+  if == 0 (len xs); then 
+    ys;
+  else if == 0 (len ys); then
+    xs;
+  else if <= (head xs) (head ys); then
+    cons (head xs) (merge (tail xs) ys);
+  else
+    cons (head ys) (merge xs (tail ys));
+
+let mergesort xs =
+  if <= (len xs) 1; then
+    xs;
+  else {
+    let left_size = // (len xs) 2;
+    let left = take left_size xs;
+    let right = skip left_size xs;
+    merge (mergesort left) (mergesort right)
+  };
+
+let main _ = print (mergesort (' 4 3 1 5 2))

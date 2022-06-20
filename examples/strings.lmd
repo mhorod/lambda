@@ -1,0 +1,10 @@
+-- Operations on strings
+
+-- Insert xs between every two elements of xss
+let intersperse xs xss = 
+  if <= (len xss) 1; then
+    xss;
+  else
+    + (+ (' (head xss)) xs) (intersperse xs (tail xss));
+
+let main _ = print (intersperse "-"  "dupadupa");

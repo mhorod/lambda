@@ -1,0 +1,31 @@
+-- Collection of some classic functions
+
+let map f xs = 
+  if == 0 (len xs); then 
+    xs;
+  else
+    cons (f (head xs)) (map f (tail xs));
+
+let range a b = 
+  if == a b; then
+    list;
+  else
+    cons a (range (+ a 1) b);
+
+let foldr f z xs = 
+  if == (len xs) 0; then
+    z;
+  else
+    f (head xs) (foldr f z (tail xs));
+
+let foldl f z xs = 
+  if == (len xs) 0; then
+    z;
+  else
+    foldl f (f z (head xs)) (tail xs);
+
+let last xs = 
+  if == 1 (len xs); then
+    head xs;
+  else
+    last (tail xs);

@@ -1,0 +1,11 @@
+import std
+
+-- Calculating fibbonaci sequence with recursion
+
+let fib n = 
+  if < n 2; then 
+    1;
+  else
+    + (fib (- n 2)) (fib (- n 1));
+
+let main _ = print (map fib (range 2 20));

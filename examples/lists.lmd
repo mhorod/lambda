@@ -1,0 +1,15 @@
+-- Demonstration of operations on lists
+
+-- single apostrophe constructs a new list
+let a = ' 1 2 3 4 5;
+
+let reverse xs = 
+  if <= (len xs) 1; then
+    xs;
+  else
+    + (reverse (tail xs)) (' (head xs));
+
+let main _ = {
+  print a;
+  print (reverse a);
+}

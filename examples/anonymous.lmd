@@ -1,0 +1,5 @@
+-- Demonstration of anonymous functions
+
+let apply_twice f = fn x => f (f x);
+-- (3^2)^2 = 81
+let main _ = print ((apply_twice (fn x => * x x)) 3)

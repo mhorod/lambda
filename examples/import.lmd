@@ -1,0 +1,10 @@
+-- Importing stuff - imports are relative
+
+import std
+import "std"
+import "mod/foo"
+
+let main _ = {
+  print (last (' 1 2 3));
+  foo 123;
+}
