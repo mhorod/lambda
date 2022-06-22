@@ -1,4 +1,6 @@
-# lambda
+![lambda](logo.png)
+
+---
 
 Small functional language, currently in development, thus unstable.
 
