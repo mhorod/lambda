@@ -1,0 +1,26 @@
+-- Demo of processing program arguments
+-- Simple calculator - takes binary expression and prints result
+
+let car = head;
+let cdr = tail;
+let cadr xs = car (cdr xs);
+let caddr xs = car (cdr (cdr xs));
+
+let get_op op = 
+    if == op "+"; then
+        +;
+    else if == op "-"; then
+        -;
+    else if == op "*"; then
+        *;
+    else if == op "/"; then
+        /;
+    else
+        fn x y => 0;
+
+let main argv = {
+    let lhs = int (car argv);
+    let op = get_op (cadr argv);
+    let rhs = int (caddr argv);
+    print (op lhs rhs);
+}
