@@ -58,19 +58,28 @@ def lex_string(cursor):
     '''
     lex a string with escaped characters
     '''
-    cursor = cursor.clone()
 
-    cursor.advance()  # "
+    def expect_has(cursor):
+        if cursor.has():
+            return Ok(cursor, [])
+        else:
+            error = Error("unexpected end of file while lexing string",
+                          cursor.consumed_location())
+            return Err(cursor, error, True)
+
+    return Ok(cursor.clone(), [])\
+        .and_then(expect_and_skip('\"'))\
+        .and_then(lex_anything_until_quote)\
+        .and_then(expect_has)\
+        .and_then(expect_and_skip('\"'))\
+        .and_then_transform(lambda cursor, tokens: Ok(cursor, String(tokens[0], cursor.consumed_location())))
+
+
+def lex_anything_until_quote(cursor):
     text = ""
     while cursor.has() and cursor.peek() != "\"":
         text += lex_char(cursor)
-
-    if not cursor.has():
-        error = Error("unterminated string", cursor.consumed_location())
-        return Err(cursor, error, True)
-
-    cursor.advance()  # "
-    return Ok(cursor, String(text, cursor.consumed_location()))
+    return Ok(cursor, text)
 
 
 def lex_char(cursor):

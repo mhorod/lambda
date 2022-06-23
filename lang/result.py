@@ -2,6 +2,7 @@ class ParsingResult:
     '''
     Result of parsing or lexing tokens from a cursor
     '''
+
     def __init__(self, cursor, tokens, errors, fatal) -> None:
         self.cursor = cursor
         self.tokens = tokens

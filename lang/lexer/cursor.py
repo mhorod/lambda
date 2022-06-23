@@ -43,7 +43,7 @@ class Cursor:
         return self.source.len() - self.index
 
     def has(self, count=1) -> bool:
-        return self.index + count < self.source.len()
+        return self.index + count <= self.source.len()
 
     def clone(self):
         '''
