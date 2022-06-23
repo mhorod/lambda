@@ -1,0 +1,16 @@
+-- Church encoding of numbers using function application
+
+let zero f = fn x => x;
+let one f = fn x => f x;
+let two f = fn x => f (f x);
+let three f = fn x => f ((two f) x);
+let four f = fn x => f ((three f) x);
+
+let main _ = {
+    let apply num = print ((num (+ 1)) 0);
+    apply zero;
+    apply one;
+    apply two;
+    apply three;
+    apply four;
+}
