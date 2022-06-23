@@ -2,8 +2,29 @@ import re
 from lang.tokens import *
 from lang.source import *
 
-from .result import *
+from ..result import *
 from .cursor import Cursor
+
+
+class LexingError:
+    def __init__(self, message, location):
+        self.message = message
+        self.location = location
+
+    def __str__(self):
+        return f"{self.location}:\n {self.message}"
+
+    def print(self):
+        print_error(self)
+
+
+def print_error(error):
+    line = error.location.source.linecol(error.location.begin).line + 1
+    column = error.location.source.linecol(error.location.begin).column + 1
+    print(f"{error.location}:")
+    print(error.location.source.lines[line - 1])
+    print(" " * (column - 1) + error.location.len() * "^")
+    print(error.message)
 
 
 def lex_program(source: Source):
@@ -11,17 +32,17 @@ def lex_program(source: Source):
     result = Ok(cursor, [])
     while result.is_ok() and result.cursor.has():
         if is_identifier_start(result.cursor.peek()):
-            result = result.and_then_lex(lex_identifier)
+            result = result.and_then(lex_identifier)
         elif result.cursor.peek().isdigit():
-            result = result.and_then_lex(lex_number)
+            result = result.and_then(lex_number)
         elif result.cursor.peek() == '\"':
-            result = result.and_then_lex(lex_string)
+            result = result.and_then(lex_string)
         elif result.cursor.peek().isspace():
-            result = result.and_then_lex(lex_whitespace)
+            result = result.and_then(lex_whitespace)
         elif result.cursor.peek(2) == '--':
-            result = result.and_then_lex(lex_comment)
+            result = result.and_then(lex_comment)
         else:
-            result = result.and_then_lex(lex_symbol)
+            result = result.and_then(lex_symbol)
     return result
 
 
@@ -38,9 +59,9 @@ def lex_identifier(cursor):
     lex an identifier i.e. a sequence of letters, digits, apostrophes or underscores
     """
     return Ok(cursor.clone(), [])\
-        .and_then_lex(expect_matches(is_identifier_start, "character, _, or '"))\
-        .and_then_lex(take_while(is_identifier_start, 1))\
-        .and_then_lex(take_while(is_identifier_continue))\
+        .and_then(expect_matches(is_identifier_start, "character, _, or '"))\
+        .and_then(take_while(is_identifier_start, 1))\
+        .and_then(take_while(is_identifier_continue))\
         .and_then_transform(lambda cursor, tokens: Ok(cursor, Identifier(tokens[0] + tokens[1], cursor.consumed_location())))
 
 
@@ -49,8 +70,8 @@ def lex_number(cursor):
     lex a decimal number
     '''
     return Ok(cursor.clone(), [])\
-        .and_then_lex(expect_matches(lambda c: c.isdigit()))\
-        .and_then_lex(take_while(lambda c: c.isdigit()))\
+        .and_then(expect_matches(lambda c: c.isdigit()))\
+        .and_then(take_while(lambda c: c.isdigit()))\
         .and_then_transform(lambda cursor, tokens: Ok(cursor, Number(tokens[0], cursor.consumed_location())))
 
 
@@ -88,8 +109,8 @@ def lex_comment(cursor):
     lex a comment, a line starting with --
     '''
     return Ok(cursor, [])\
-        .and_then_lex(expect_and_skip("--"))\
-        .and_then_lex(take_while(lambda c: c != '\n'))\
+        .and_then(expect_and_skip("--"))\
+        .and_then(take_while(lambda c: c != '\n'))\
         .and_then_transform(lambda cursor, tokens: Ok(cursor, Comment(tokens[0], cursor.consumed_location())))
 
 
@@ -119,7 +140,7 @@ def lex_symbol(cursor):
     return Ok(cursor, symbol)
 
 
-# Cursor functions that can be plugged into result and_then_lex
+# Cursor functions that can be plugged into result and_then
 
 def expect_and_skip(expected):
     def transform(cursor, tokens):
@@ -131,7 +152,7 @@ def expect_and_skip(expected):
             return Err(cursor, error, True)
 
     def f(cursor):
-        return Ok(cursor.clone(), []).and_then_lex(take(len(expected))).and_then_transform(transform)
+        return Ok(cursor.clone(), []).and_then(take(len(expected))).and_then_transform(transform)
     return f
 
 
@@ -149,7 +170,7 @@ def expect_matches(predicate, expected=None):
             return Err(cursor, error, True)
 
     def f(cursor):
-        return Ok(cursor, []).and_then_lex(peek_while(predicate, 1)).and_then_transform(transform)
+        return Ok(cursor, []).and_then(peek_while(predicate, 1)).and_then_transform(transform)
 
     return f
 
