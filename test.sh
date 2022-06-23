@@ -3,5 +3,5 @@
 tests=$(find tests -type f -name "*.py")
 for t in ${tests}
 do
-  python3 -m unittest ${t}
+  python3 -m unittest ${t} -v
 done
