@@ -20,6 +20,9 @@ class Value:
     def __repr__(self):
         return to_string(self.value)
 
+    def __eq__(self, other):
+        return self.value == other.value
+
 
 class Function:
     def __init__(self, name, args, expr, ctx=None, target=None, applied=None):
@@ -78,7 +81,7 @@ class BuiltInFunction(Function):
     def evaluate_result(self, values):
         values = [arg.value if type(arg) == Value else arg for arg in values]
         result = self.f(*values)
-        if type(result) != Function:
+        if type(result) != Function and type(result) != Value:
             return Value(result)
         else:
             return result
@@ -134,7 +137,8 @@ def add_builtins(ctx):
     ctx['len'] = BuiltInFunction(['x'], lambda x: len(x))
 
     # Casts
-    ctx['int'] = BuiltInFunction(['x'], int)
+    ctx['int'] = BuiltInFunction(['x'], lambda x: int(to_string(x)))
+    ctx['str'] = BuiltInFunction(['x'], lambda x: list(str(x)))
 
     # Create fresh new contex to allow shadowing
     ctx.push()
@@ -154,6 +158,7 @@ def run_instructions(instructions, argv, ctx=None):
         if ctx['main'] is None:
             raise RuntimeError("main function not found")
         else:
+            argv = [Value(list(str(arg))) for arg in argv]
             ctx['main']([argv])
     except RuntimeError as e:
         print("ERROR:", e)
