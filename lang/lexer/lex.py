@@ -1,30 +1,9 @@
-import re
 from lang.tokens import *
 from lang.source import *
 
 from ..result import *
 from .cursor import Cursor
-
-
-class LexingError:
-    def __init__(self, message, location):
-        self.message = message
-        self.location = location
-
-    def __str__(self):
-        return f"{self.location}:\n {self.message}"
-
-    def print(self):
-        print_error(self)
-
-
-def print_error(error):
-    line = error.location.source.linecol(error.location.begin).line + 1
-    column = error.location.source.linecol(error.location.begin).column + 1
-    print(f"{error.location}:")
-    print(error.location.source.lines[line - 1])
-    print(" " * (column - 1) + error.location.len() * "^")
-    print(error.message)
+from lang.error import Error
 
 
 def lex_program(source: Source):
@@ -87,7 +66,7 @@ def lex_string(cursor):
         text += lex_char(cursor)
 
     if not cursor.has():
-        error = LexingError("unterminated string", cursor.consumed_location())
+        error = Error("unterminated string", cursor.consumed_location())
         return Err(cursor, error, True)
 
     cursor.advance()  # "
@@ -147,8 +126,8 @@ def expect_and_skip(expected):
         if len(tokens) == 1 and tokens[0] == expected:
             return Ok(cursor, [])
         else:
-            error = LexingError("expected " + expected,
-                                cursor.consumed_location())
+            error = Error("expected " + expected,
+                          cursor.consumed_location())
             return Err(cursor, error, True)
 
     def f(cursor):
@@ -165,8 +144,8 @@ def expect_matches(predicate, expected=None):
             return Ok(cursor, [])
         else:
             msg = "" if expected is None else ", expected " + expected
-            error = LexingError("unexpected character: " +
-                                cursor.peek() + msg, cursor.consumed_location())
+            error = Error("unexpected character: " +
+                          cursor.peek() + msg, cursor.consumed_location())
             return Err(cursor, error, True)
 
     def f(cursor):
