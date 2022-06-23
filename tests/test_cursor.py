@@ -113,5 +113,5 @@ class TestCursorUtils(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    print("Testing lexer")
+    print("Testing cursor")
     unittest.main()
