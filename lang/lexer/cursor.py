@@ -42,8 +42,8 @@ class Cursor:
     def remaining(self):
         return self.source.len() - self.index
 
-    def has(self) -> bool:
-        return self.index < self.source.len()
+    def has(self, count=1) -> bool:
+        return self.index + count < self.source.len()
 
     def clone(self):
         '''

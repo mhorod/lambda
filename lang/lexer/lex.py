@@ -108,7 +108,7 @@ def lex_symbol(cursor):
 
     cursor = cursor.clone()
     count = 0
-    while cursor.has() and cursor.peek(count + 1) in symbols:
+    while cursor.has(count + 1) and cursor.peek(count + 1) in symbols:
         count += 1
 
     if count == 0:
