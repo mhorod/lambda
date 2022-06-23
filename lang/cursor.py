@@ -1,26 +1,10 @@
-class Cursor:
-    def __init__(self, data):
-        self.data = data
-        self.index = 0
-
-    def has(self):
-        return self.index < len(self.data)
-
-    def peek(self, count=1):
-        return self.data[self.index:self.index + count]
-
-    def consume(self, count=1):
-        consumed = self.peek(count)
-        self.skip(count)
-        return consumed
-
-    def skip(self, count=1):
-        self.index += count
+from .tokens import Whitespace, Comment
 
 
 class TokenCursor:
     def __init__(self, data):
-        self.data = data
+        self.data = [token for token in data if type(
+            token) not in (Whitespace, Comment)]
         self.index = 0
 
     def has(self):

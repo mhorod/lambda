@@ -13,6 +13,7 @@ class RuntimeError(BaseException):
 
 class Value:
     '''Wrapper for a runtime value'''
+
     def __init__(self, value):
         self.value = value
 
@@ -142,7 +143,6 @@ def add_builtins(ctx):
 def run_instructions(instructions, argv, ctx=None):
     ctx = ContextStack(ctx)
     add_builtins(ctx)
-
     try:
         for instruction in instructions:
             if type(instruction) == Let:

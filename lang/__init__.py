@@ -1,6 +1,7 @@
-from lang import context
-from lang import cursor
-from lang import tokens
-from lang import ast
-from lang import lexer
-from lang import parser
+from . import context
+from . import cursor
+from . import tokens
+from . import ast
+from .lexer import lex, cursor
+from . import parser
+from . import source
