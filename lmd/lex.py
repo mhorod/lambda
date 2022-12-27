@@ -8,6 +8,7 @@ from enum import Enum, auto
 
 from lmd import source
 
+
 class Cursor:
     '''
     Cursor that points to a position in a source.
@@ -16,7 +17,7 @@ class Cursor:
     def __init__(self, src: source.Source, index: int = 0):
         self.src = src
         self.index = index
-        self.consumed_begin = index 
+        self.consumed_begin = index
 
     def peek(self, cnt: int = 1) -> str:
         '''
@@ -55,6 +56,7 @@ class Cursor:
         self.consumed_begin = self.index
         return result
 
+
 class TokenGroup(Enum):
     '''
     Group that token belongs to.
@@ -66,7 +68,15 @@ class TokenGroup(Enum):
     SYMBOL = auto()
     UNKNOWN = auto()
 
-@dataclass(frozen=True)
+
+class LiteralType(Enum):
+    '''
+    Type of literal.
+    '''
+    STRING = auto()
+    NUMBER = auto()
+
+
 class RawToken:
     '''
     A raw token, not yet parsed.
@@ -74,15 +84,26 @@ class RawToken:
     span: source.Span
     group: TokenGroup
     text: str
-    extra: dict = field(default_factory=dict)
+
+    def __init__(self, span: source.Span, group: TokenGroup, text: str, **kwargs):
+        self.span = span
+        self.group = group
+        self.text = text
+        for k, v in kwargs.items():
+            if not isinstance(k, str):
+                raise TypeError("extra keys must be strings")
+            else:
+                setattr(self, k, v)
 
     def __str__(self):
-        extra = ",".join(f"{k}={v}" for k, v in self.extra.items())
+        extra = ", ".join(
+            f"{k}={getattr(self, k)}" for k in self.extra_attrs())
         if extra:
-            extra = ", " + extra
+            extra = " " + extra
         return f'{self.span}: {self.group.name} {repr(self.text)}{extra}'
 
-
+    def extra_attrs(self):
+        return [k for k in self.__dict__.keys() if k not in ["span", "group", "text"] and not k.startswith("_")]
 
 
 def lex_source(src: source.Source) -> list:
@@ -111,21 +132,26 @@ def lex_source(src: source.Source) -> list:
             result.append(lex_unknown(cursor))
     return result
 
-    
+
 def is_space(s: str) -> bool:
     return s in " \t\r\n"
+
 
 def is_digit(s: str) -> bool:
     return s in "0123456789"
 
+
 def is_name_start(s: str) -> bool:
     return s.isalpha() or s == "_" or s == '\''
+
 
 def is_name_continue(s: str) -> bool:
     return is_name_start(s) or is_digit(s)
 
+
 def is_string_start(s: str) -> bool:
     return s == '"'
+
 
 PARENS = "()[]{}"
 MATH_SYMBOLS = "+-*/%&|^~"
@@ -134,8 +160,10 @@ STRUCTURAL_SYMBOLS = ":,;."
 
 SYMBOLS = PARENS + MATH_SYMBOLS + COMPARISON_SYMBOLS + STRUCTURAL_SYMBOLS
 
+
 def is_symbol(s: str) -> bool:
     return s in SYMBOLS
+
 
 def is_comment_start(s: str) -> bool:
     return s == "--" or s == "{-"
@@ -149,6 +177,7 @@ def lex_whitespace(cursor: Cursor) -> RawToken:
     while cursor.has() and is_space(cursor.peek()):
         content += cursor.take()
     return RawToken(cursor.consume_span(), TokenGroup.WHITESPACE, content)
+
 
 def lex_comment(cursor: Cursor) -> RawToken:
     '''
@@ -166,7 +195,8 @@ def lex_line_comment(cursor: Cursor) -> RawToken:
     '''
     content = cursor.take_while(lambda s: s != "\n")
     span = cursor.consume_span()
-    return RawToken(span, TokenGroup.COMMENT, content)
+    return RawToken(span, TokenGroup.COMMENT, content, terminated=True)
+
 
 def lex_block_comment(cursor: Cursor) -> RawToken:
     '''
@@ -190,7 +220,8 @@ def lex_block_comment(cursor: Cursor) -> RawToken:
             content += cursor.take()
 
     span = cursor.consume_span()
-    return RawToken(span, TokenGroup.COMMENT, content, {"terminated": terminated})
+    return RawToken(span, TokenGroup.COMMENT, content, terminated=terminated)
+
 
 def lex_number(cursor: Cursor) -> RawToken:
     '''
@@ -198,7 +229,8 @@ def lex_number(cursor: Cursor) -> RawToken:
     '''
     content = cursor.take_while(is_digit)
     span = cursor.consume_span()
-    return RawToken(span, TokenGroup.LITERAL, content, {"type": "number"})
+    return RawToken(span, TokenGroup.LITERAL, content, type=LiteralType.NUMBER)
+
 
 def lex_name(cursor: Cursor) -> RawToken:
     '''
@@ -208,6 +240,7 @@ def lex_name(cursor: Cursor) -> RawToken:
     span = cursor.consume_span()
     return RawToken(span, TokenGroup.NAME, content)
 
+
 def lex_symbol(cursor: Cursor) -> RawToken:
     '''
     Lex a symbol
@@ -215,6 +248,7 @@ def lex_symbol(cursor: Cursor) -> RawToken:
     content = cursor.take_while(is_symbol)
     span = cursor.consume_span()
     return RawToken(span, TokenGroup.SYMBOL, content)
+
 
 def lex_string(cursor: Cursor) -> RawToken:
     '''
@@ -229,9 +263,11 @@ def lex_string(cursor: Cursor) -> RawToken:
             terminated = True
             break
     span = cursor.consume_span()
-    return RawToken(span, TokenGroup.LITERAL, content, {"type": "string", "terminated": terminated})
+    return RawToken(span, TokenGroup.LITERAL, content, type=LiteralType.STRING, terminated=terminated)
 
-ESCAPED = { "\\n": "\n", "\\r": "\r", "\\t": "\t", "\\\"": "\"", "\\\\": "\\" }
+
+ESCAPED = {"\\n": "\n", "\\r": "\r", "\\t": "\t", "\\\"": "\"", "\\\\": "\\"}
+
 
 def lex_escaped(cursor: Cursor) -> str:
     '''
