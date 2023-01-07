@@ -65,6 +65,8 @@ class TokenGroup(Enum):
     COMMENT = auto()
     LITERAL = auto()
     NAME = auto()
+    DELIMITER = auto()
+    OPERATOR = auto()
     SYMBOL = auto()
     UNKNOWN = auto()
 
@@ -153,18 +155,6 @@ def is_string_start(s: str) -> bool:
     return s == '"'
 
 
-PARENS = "()[]{}"
-MATH_SYMBOLS = "+-*/%&|^~"
-COMPARISON_SYMBOLS = "<=>"
-STRUCTURAL_SYMBOLS = ":,;."
-
-SYMBOLS = PARENS + MATH_SYMBOLS + COMPARISON_SYMBOLS + STRUCTURAL_SYMBOLS
-
-
-def is_symbol(s: str) -> bool:
-    return s in SYMBOLS
-
-
 def is_comment_start(s: str) -> bool:
     return s == "--" or s == "{-"
 
@@ -241,13 +231,43 @@ def lex_name(cursor: Cursor) -> RawToken:
     return RawToken(span, TokenGroup.NAME, content)
 
 
+DELIMITERS = "()[]{}"
+STRUCTURAL_SYMBOLS = ":,;."
+
+MATH_SYMBOLS = "+-*/%&|^~"
+COMPARISON_SYMBOLS = "<=>"
+OPERATOR_SYMBOLS = MATH_SYMBOLS + COMPARISON_SYMBOLS
+
+SYMBOLS = DELIMITERS + STRUCTURAL_SYMBOLS + OPERATOR_SYMBOLS
+
+
+def is_delimiter(s: str) -> bool:
+    return s in DELIMITERS
+
+
+def is_operator(s: str) -> bool:
+    return s in OPERATOR_SYMBOLS
+
+
+def is_symbol(s: str) -> bool:
+    return s in SYMBOLS
+
+
 def lex_symbol(cursor: Cursor) -> RawToken:
     '''
     Lex a symbol
     '''
-    content = cursor.take_while(is_symbol)
+    if is_operator(cursor.peek()):
+        content = cursor.take_while(is_operator)
+        group = TokenGroup.OPERATOR
+    elif is_delimiter(cursor.peek()):
+        content = cursor.take()
+        group = TokenGroup.DELIMITER
+    else:
+        content = cursor.take()
+        group = TokenGroup.SYMBOL
     span = cursor.consume_span()
-    return RawToken(span, TokenGroup.SYMBOL, content)
+    return RawToken(span, group, content)
 
 
 def lex_string(cursor: Cursor) -> RawToken:
