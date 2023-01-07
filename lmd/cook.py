@@ -43,7 +43,10 @@ def cook_literal(token: lex.RawToken, error_report: ErrorReport) -> Token:
         if not token.terminated:
             message = Message(token.span, f"Unterminated string")
             error_report.add(Error([message]))
-        return make_token(token, Literal(LiteralType.STRING))
+            content = token.text[1:]
+        else:
+            content = token.text[1:-1]
+        return make_token(token, String(content))
 
 
 KEYWORDS = {

@@ -117,6 +117,15 @@ class Number(Literal):
         return f"Number({self.number_value})"
 
 
+class String(Literal):
+    def __init__(self, content: str):
+        super().__init__(LiteralType.STRING)
+        self.content = content
+
+    def __str__(self):
+        return f"String({repr(self.content)})"
+
+
 class Bool(Literal):
     def __init__(self, bool_value: bool):
         super().__init__(self, LiteralType.BOOL)
