@@ -42,7 +42,7 @@ def cook_literal(token: lex.RawToken, error_report: ErrorReport) -> Token:
     else:
         if not token.terminated:
             message = Message(token.span, f"Unterminated string")
-            error_report.add(Error([message]))
+            error_report.add(Error(message))
             content = token.text[1:]
         else:
             content = token.text[1:-1]
@@ -99,5 +99,5 @@ def cook_symbol(token: lex.RawToken, error_report: ErrorReport) -> Token:
 
 def cook_unknown(token: lex.RawToken, error_report: ErrorReport) -> Token:
     message = Message(token.span, f"Unknown token: `{token.text}`")
-    error_report.add(Error([message]))
+    error_report.add(Error(message))
     return make_token(token, Unknown())
