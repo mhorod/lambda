@@ -4,6 +4,7 @@ source_code = """
 let x = 1
 -- nested comment
 {- let y = 2 {- -} -}
+let a = if x == 1 then 1 else 2
 let z = "hello\\n"
 let w = "world
 """

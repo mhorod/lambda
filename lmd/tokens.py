@@ -78,6 +78,9 @@ class Operator(TokenKind):
 
 class KeywordType(Enum):
     LET = auto()
+    IF = auto()
+    THEN = auto
+    ELSE = auto()
     WHERE = auto()
     INFIX = auto()
     INFIXR = auto()

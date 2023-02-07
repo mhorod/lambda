@@ -51,6 +51,9 @@ def cook_literal(token: lex.RawToken, error_report: ErrorReport) -> Token:
 
 KEYWORDS = {
     'let': KeywordType.LET,
+    'if': KeywordType.IF,
+    'then': KeywordType.THEN,
+    'else': KeywordType.ELSE,
     'where': KeywordType.WHERE,
     'infix': KeywordType.INFIX,
     'infixr': KeywordType.INFIXR,
