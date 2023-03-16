@@ -16,7 +16,7 @@ class TokenType(Enum):
     OPEN_DELIMITER = auto()
     CLOSE_DELIMITER = auto()
     UNKNOWN = auto()
-
+    EOF = auto()
 
 class TokenKind:
     def __init__(self, token_type: TokenType):
@@ -44,7 +44,9 @@ class TokenKind:
         return f"{type(self).__name__}"
 
 # Aliases for simpler groups
-
+class Eof(TokenKind):
+    def __init__(self):
+        super().__init__(TokenType.EOF)
 
 class Comment(TokenKind):
     def __init__(self):
@@ -77,7 +79,9 @@ class Operator(TokenKind):
 
 
 class KeywordType(Enum):
+    CONST = auto()
     LET = auto()
+    IN = auto()
     IF = auto()
     THEN = auto
     ELSE = auto()
@@ -146,13 +150,13 @@ class DelimiterType(Enum):
 
 class OpenDelimiter(TokenKind):
     def __init__(self, delimiter_type: DelimiterType):
-        super().__init__(self, TokenType.OPEN_DELIMITER)
+        super().__init__(TokenType.OPEN_DELIMITER)
         self.delimiter_type = delimiter_type
 
 
 class CloseDelimiter(TokenKind):
     def __init__(self, delimiter_type: DelimiterType):
-        super().__init__(self, TokenType.CLOSE_DELIMITER)
+        super().__init__(TokenType.CLOSE_DELIMITER)
         self.delimiter_type = delimiter_type
 
 
@@ -165,7 +169,7 @@ class SymbolType(Enum):
 
 class Symbol(TokenKind):
     def __init__(self, symbol_type: SymbolType):
-        super().__init__(self, TokenType.SYMBOL)
+        super().__init__(TokenType.SYMBOL)
         self.symbol_type = symbol_type
 
 

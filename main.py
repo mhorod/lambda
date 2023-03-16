@@ -1,27 +1,50 @@
 from lmd import *
 
 source_code = """
-let x = 1
+const x = 1
 -- nested comment
-{- let y = 2 {- -} -}
-let a = if x == 1 then 1 else 2
-let z = "hello\\n"
-let w = "world
+{- const y = 2 {- -} -}
+const a = if x == 1 then 1 else 2
+const z = "hello\\n"
+const w = "world"
+"""
+
+source_code = """
+const x = 
+    if 1 == 1 then
+        (x y) z
+    else
+        2 + x
 """
 
 src = source.Source("main", source_code)
 
-tokens = lex.lex_source(src)
+lexed = lex.lex_source(src)
 
-for token in tokens:
+print("Lexed tokens:")
+for token in lexed:
     print(token)
 print()
 
 report = errors.ErrorReport()
-cooked = cook.cook_tokens(tokens, report)
+cooked = cook.cook_tokens(lexed, report)
 errors.SimpleErrorPrinter().print(report)
 
 print()
-
+print("Cooked tokens:")
 for token in cooked:
     print(token)
+
+print()
+cooked = [token for token in cooked
+          if not token.kind.extends(tokens.Comment()) 
+          and not token.kind.extends(tokens.Whitespace())]
+
+result = parse.parse_const(parse.Cursor(cooked))
+
+error_printer = errors.SimpleErrorPrinter()
+for error in result.errors:
+    error_printer.print_error(error)
+
+print("Parsed AST:")
+nodes.ASTPrinter().print_node(result.value)

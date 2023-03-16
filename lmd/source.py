@@ -15,7 +15,7 @@ class Source:
             self.prefix_sums.append(line_length + self.prefix_sums[-1] + 1)
 
     def index_to_line_and_column(self, index):
-        line = bisect.bisect_left(self.prefix_sums, index) - 1
+        line = bisect.bisect_right(self.prefix_sums, index) - 1
         column = index - self.prefix_sums[line]
         return line, column
 
