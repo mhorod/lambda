@@ -21,6 +21,15 @@ class Result:
     def Err(cursor, value, errors):
         return Result(cursor, value, errors, False)
 
+    def merge(self, other, f):
+        result =  Result(
+            other.cursor,
+            f(self.value, other.value),
+            self.errors + other.errors,
+            self.ok and other.ok
+        )
+        result.commited = self.commited or other.commited
+        return result
 
 class Cursor:
     def __init__(self, tokens: List[Token], index: int = 0):
@@ -172,21 +181,6 @@ def parse_kind(kind: TokenKind) -> Parser:
             return Result.Err(cursor, None, [Error(message)])
     return parser
 
-
-def parse_whitespace(cursor: Cursor) -> Result:
-    return parse_kind(Whitespace())(cursor)
-
-
-def parse_const(cursor: Cursor) -> Result:
-    parser = Sequential()\
-        .then(commit(parse_kind(Keyword(KeywordType.CONST)))).drop() \
-        .then(parse_kind(Identifier())) \
-        .then(parse_kind(Operator())).drop() \
-        .then(parse_expression)
-    result = parser(cursor)
-    result.value = ConstNode(*result.value)
-    return result
-
 def flatten(xs: List[List]) -> List:
     result = []
     for x in xs:
@@ -198,6 +192,55 @@ def flatten(xs: List[List]) -> List:
 
 def remove_none(xs: List) -> List:
     return [x for x in xs if x is not None]
+
+def parse_program(cursor: Cursor) -> Result:
+    result = Result.Ok(cursor, [], [])
+    while result.cursor.has() and result.ok:
+        parsed = parse_statement(result.cursor.clone())
+        result = result.merge(parsed, lambda x, y: x + [y])
+    result.value = ProgramNode(remove_none(flatten(result.value)))
+    return result
+
+
+def parse_statement(cursor: Cursor) -> Result:
+    token = cursor.peek_one()
+    if token.kind.extends(Keyword(KeywordType.CONST)):
+        return parse_const(cursor)
+    elif token.kind.extends(Keyword(KeywordType.LET)):
+        return parse_let(cursor)
+    else:
+        message = Message(
+            token.span, f"unexpected token: `{token.text}`, expected `let` or `const`")
+        return Result.Err(cursor, None, [Error(message)])
+
+
+def parse_whitespace(cursor: Cursor) -> Result:
+    return parse_kind(Whitespace())(cursor)
+
+
+def parse_const(cursor: Cursor) -> Result:
+    parser = Sequential()\
+        .then(commit(parse_kind(Keyword(KeywordType.CONST)))).drop() \
+        .then(parse_kind(Identifier())) \
+        .then(parse_kind(Symbol(SymbolType.ASSIGN))).drop() \
+        .then(parse_expression)
+    result = parser(cursor)
+    result.value = ConstNode(*result.value)
+    return result
+
+
+def parse_let(cursor: Cursor) -> Result:
+    parser = Sequential()\
+        .then(commit(parse_kind(Keyword(KeywordType.LET)))).drop() \
+        .then(parse_kind(Identifier())) \
+        .then(parse_kind(Symbol(SymbolType.ASSIGN))).drop() \
+        .then(parse_expression) \
+        .then(parse_kind(Keyword(KeywordType.IN))).drop() \
+        .then(parse_expression)
+
+    result = parser(cursor)
+    result.value = LetNode(*result.value)
+    return result
 
 def parse_expression(cursor: Cursor) -> Result:
     parser = Sequential() \

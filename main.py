@@ -15,6 +15,7 @@ const x =
         (x y) z
     else
         2 + x
+let x = f x in x
 """
 
 src = source.Source("main", source_code)
@@ -40,7 +41,7 @@ cooked = [token for token in cooked
           if not token.kind.extends(tokens.Comment()) 
           and not token.kind.extends(tokens.Whitespace())]
 
-result = parse.parse_const(parse.Cursor(cooked))
+result = parse.parse_program(parse.Cursor(cooked))
 
 error_printer = errors.SimpleErrorPrinter()
 for error in result.errors:

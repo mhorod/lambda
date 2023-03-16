@@ -1,3 +1,10 @@
+class ProgramNode:
+    def __init__(self, statements):
+        self.statements = statements
+
+    def __repr__(self):
+        return f"program ({self.statements})"
+
 class TokenNode:
     def __init__(self, token):
         self.token = token
@@ -13,6 +20,14 @@ class ConstNode:
     def __repr__(self):
         return f"const ({self.name}) = ({self.value})"
 
+class LetNode:
+    def __init__(self, name, value, body):
+        self.name = name
+        self.value = value
+        self.body = body
+
+    def __repr__(self):
+        return f"let ({self.name}) = ({self.value}) in ({self.body})"
 
 class ExpressionNode:
     def __init__(self, nodes):
@@ -41,10 +56,14 @@ class ASTPrinter:
         print("  " * self.depth + str(x))
 
     def print_node(self, node):
-        if isinstance(node, TokenNode):
+        if isinstance(node, ProgramNode):
+            return self.print_program_node(node)
+        elif isinstance(node, TokenNode):
             return self.print_token_node(node)
         elif isinstance(node, ConstNode):
             return self.print_const_node(node)
+        elif isinstance(node, LetNode):
+            return self.print_let_node(node)
         elif isinstance(node, ExpressionNode):
             return self.print_expression_node(node)
         elif isinstance(node, IfNode):
@@ -58,6 +77,13 @@ class ASTPrinter:
         self.print(repr(node))
         self.unindent()
 
+    def print_program_node(self, node):
+        self.print("program")
+        self.indent()
+        for n in node.statements:
+            self.print_node(n)
+        self.unindent()
+
     def print_token_node(self, node):
         self.print("token")
         self.indent()
@@ -69,6 +95,18 @@ class ASTPrinter:
         self.indent()
         self.print_node(node.name)
         self.print_node(node.value)
+        self.unindent()
+
+    def print_let_node(self, node):
+        self.print("let")
+        self.indent()
+        self.print_node(node.name)
+        self.print_node(node.value)
+        self.unindent()
+
+        self.print("in")
+        self.indent()
+        self.print_node(node.body)
         self.unindent()
 
     def print_expression_node(self, node):

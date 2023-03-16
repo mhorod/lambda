@@ -165,6 +165,7 @@ class SymbolType(Enum):
     SEMICOLON = auto()
     COMMA = auto()
     DOT = auto()
+    ASSIGN = auto()
 
 
 class Symbol(TokenKind):

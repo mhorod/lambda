@@ -13,8 +13,8 @@ def cook_tokens(tokens: List[lex.RawToken], error_report: ErrorReport) -> List[T
         lex.TokenGroup.LITERAL: cook_literal,
         lex.TokenGroup.NAME: cook_name,
         lex.TokenGroup.DELIMITER: cook_delimiter,
-        lex.TokenGroup.OPERATOR: cook_operator,
-        lex.TokenGroup.SYMBOL: cook_symbol,
+        lex.TokenGroup.OPERATOR: cook_operator_or_symbol,
+        lex.TokenGroup.SYMBOL: cook_operator_or_symbol,
         lex.TokenGroup.UNKNOWN: cook_unknown,
     }
 
@@ -93,13 +93,21 @@ def cook_delimiter(token: lex.RawToken, error_report: ErrorReport) -> Token:
     Kind, delimiter_type = PARENS[token.text]
     return make_token(token, Kind(delimiter_type))
 
+SYMBOLS = {
+    ':': SymbolType.COLON,
+    ';': SymbolType.SEMICOLON,
+    ',': SymbolType.COMMA,
+    '.': SymbolType.DOT,
+    '=': SymbolType.ASSIGN,
+}
 
-def cook_operator(token: lex.RawToken, error_report: ErrorReport) -> Token:
-    return make_token(token, Operator())
+def cook_operator_or_symbol(token: lex.RawToken, error_report: ErrorReport) -> Token:
+    if token.text in SYMBOLS:
+        return make_token(token, Symbol(SYMBOLS[token.text]))
+    else:
+        return make_token(token, Operator())
 
 
-def cook_symbol(token: lex.RawToken, error_report: ErrorReport) -> Token:
-    return make_token(token, Symbol())
 
 
 def cook_unknown(token: lex.RawToken, error_report: ErrorReport) -> Token:
