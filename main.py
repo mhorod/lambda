@@ -11,11 +11,14 @@ const w = "world"
 
 source_code = """
 const x = 
-    if 1 == 1 then
-        (x y) z
+    if x + y == 1 then
+        2 + (x y) $ z w * 1
     else
-        2 + x
-let x = f x in x
+        (_ + x)
+"""
+
+source_code = """
+const x = 1 + f $ 1
 """
 
 src = source.Source("main", source_code)
@@ -38,14 +41,31 @@ for token in cooked:
 
 print()
 cooked = [token for token in cooked
-          if not token.kind.extends(tokens.Comment()) 
+          if not token.kind.extends(tokens.Comment())
           and not token.kind.extends(tokens.Whitespace())]
 
 result = parse.parse_program(parse.Cursor(cooked))
-
-error_printer = errors.SimpleErrorPrinter()
 for error in result.errors:
-    error_printer.print_error(error)
+    report.add(error)
+
 
 print("Parsed AST:")
-nodes.ASTPrinter().print_node(result.value)
+printer = ast.nodes.ASTPrinter()
+printer.print_node(result.value)
+
+precedence_table = {
+    '$': ast.expressions.Precedence(0, ast.expressions.Associativity.LEFT),
+    '==': ast.expressions.Precedence(4, ast.expressions.Associativity.LEFT),
+    '+': ast.expressions.Precedence(6, ast.expressions.Associativity.LEFT),
+    '*': ast.expressions.Precedence(7, ast.expressions.Associativity.LEFT),
+}
+
+expression_transformer = ast.expressions.ExpressionTransformer(
+    precedence_table, report)
+transformed = expression_transformer.visit(result.value)
+
+print("Transformed AST:")
+printer.print_node(transformed)
+
+error_printer = errors.SimpleErrorPrinter()
+error_printer.print(report)

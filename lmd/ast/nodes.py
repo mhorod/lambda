@@ -5,12 +5,14 @@ class ProgramNode:
     def __repr__(self):
         return f"program ({self.statements})"
 
+
 class TokenNode:
     def __init__(self, token):
         self.token = token
 
     def __repr__(self):
         return f"token ({self.token})"
+
 
 class ConstNode:
     def __init__(self, name, value):
@@ -19,6 +21,7 @@ class ConstNode:
 
     def __repr__(self):
         return f"const ({self.name}) = ({self.value})"
+
 
 class LetNode:
     def __init__(self, name, value, body):
@@ -29,6 +32,7 @@ class LetNode:
     def __repr__(self):
         return f"let ({self.name}) = ({self.value}) in ({self.body})"
 
+
 class ExpressionNode:
     def __init__(self, nodes):
         self.nodes = nodes
@@ -36,11 +40,26 @@ class ExpressionNode:
     def __repr__(self):
         return f"expr ({self.nodes})"
 
+
+class BinaryExpressionNode:
+    def __init__(self, left, operator, right):
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+
+class FunctionCallNode:
+    def __init__(self, function, arguments):
+        self.function = function
+        self.arguments = arguments
+
+
 class IfNode:
     def __init__(self, condition, true_branch, false_branch):
         self.condition = condition
         self.true_branch = true_branch
         self.false_branch = false_branch
+
 
 class ASTPrinter:
     def __init__(self):
@@ -66,6 +85,10 @@ class ASTPrinter:
             return self.print_let_node(node)
         elif isinstance(node, ExpressionNode):
             return self.print_expression_node(node)
+        elif isinstance(node, BinaryExpressionNode):
+            return self.print_binary_expression_node(node)
+        elif isinstance(node, FunctionCallNode):
+            return self.print_function_call_node(node)
         elif isinstance(node, IfNode):
             return self.print_if_node(node)
         else:
@@ -113,6 +136,35 @@ class ASTPrinter:
         self.print("expr")
         self.indent()
         for n in node.nodes:
+            self.print_node(n)
+        self.unindent()
+
+    def print_binary_expression_node(self, node):
+        self.print("binary")
+        self.indent()
+
+        self.print("left")
+        self.indent()
+        self.print_node(node.left)
+        self.unindent()
+
+        self.print("operator")
+        self.indent()
+        self.print_node(node.operator)
+        self.unindent()
+
+        self.print("right")
+        self.indent()
+        self.print_node(node.right)
+        self.unindent()
+
+        self.unindent()
+
+    def print_function_call_node(self, node):
+        self.print("call")
+        self.indent()
+        self.print_node(node.function)
+        for n in node.arguments:
             self.print_node(n)
         self.unindent()
 

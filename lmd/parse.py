@@ -1,7 +1,7 @@
 from typing import Callable, List, Any
 from lmd.tokens import *
 from lmd.errors import *
-from lmd.nodes import *
+from lmd.ast.nodes import *
 
 
 class Result:
@@ -22,7 +22,7 @@ class Result:
         return Result(cursor, value, errors, False)
 
     def merge(self, other, f):
-        result =  Result(
+        result = Result(
             other.cursor,
             f(self.value, other.value),
             self.errors + other.errors,
@@ -30,6 +30,7 @@ class Result:
         )
         result.commited = self.commited or other.commited
         return result
+
 
 class Cursor:
     def __init__(self, tokens: List[Token], index: int = 0):
@@ -181,6 +182,7 @@ def parse_kind(kind: TokenKind) -> Parser:
             return Result.Err(cursor, None, [Error(message)])
     return parser
 
+
 def flatten(xs: List[List]) -> List:
     result = []
     for x in xs:
@@ -190,8 +192,10 @@ def flatten(xs: List[List]) -> List:
             result.append(x)
     return result
 
+
 def remove_none(xs: List) -> List:
     return [x for x in xs if x is not None]
+
 
 def parse_program(cursor: Cursor) -> Result:
     result = Result.Ok(cursor, [], [])
@@ -241,6 +245,7 @@ def parse_let(cursor: Cursor) -> Result:
     result = parser(cursor)
     result.value = LetNode(*result.value)
     return result
+
 
 def parse_expression(cursor: Cursor) -> Result:
     parser = Sequential() \

@@ -53,3 +53,7 @@ class SimpleErrorPrinter:
             underline = " " * (len(prefix) + column) + "^" * message.span.len()
             print(prefix + line)
             print(underline)
+
+    def print_error_report(self, error_report):
+        for error in error_report.errors:
+            self.print_error(error)
