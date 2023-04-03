@@ -42,7 +42,7 @@ class ExpressionTransformer(ASTTransformer):
             operator = nodes[0]
             nodes = nodes[1:]
 
-            rhs, nodes = self.parse_expr(nodes, operator)
+            rhs, nodes = self.parse_expr(nodes, previous_operator)
             node = BinaryExpressionNode(node, operator, rhs)
             previous_operator = operator
         return node, nodes
