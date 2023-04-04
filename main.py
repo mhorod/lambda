@@ -50,8 +50,8 @@ for error in result.errors:
 
 
 print("Parsed AST:")
-printer = ast.nodes.ASTPrinter()
-printer.print_node(result.value)
+printer = ast.printer.ASTPrinter()
+printer.visit(result.value)
 
 precedence_table = {
     '$': ast.expressions.Precedence(0, ast.expressions.Associativity.LEFT),
@@ -66,7 +66,7 @@ if not report.has_errors():
     transformed = expression_transformer.visit(result.value)
 
     print("Transformed AST:")
-    printer.print_node(transformed)
+    printer.visit(transformed)
 
 error_printer = errors.SimpleErrorPrinter()
 error_printer.print(report)
