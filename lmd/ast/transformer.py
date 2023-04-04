@@ -9,19 +9,22 @@ class ASTTransformer(Visitor):
     '''
 
     def visit_program_node(self, node):
-        return ProgramNode([self.visit(statement) for statement in node.statements])
+        return ProgramNode(node.span, [self.visit(statement) for statement in node.statements])
 
     def visit_token_node(self, node):
         return node
 
     def visit_const_node(self, node):
-        return ConstNode(self.visit(node.name), self.visit(node.value))
+        return ConstNode(node.span, self.visit(node.name), self.visit(node.value))
 
     def visit_let_node(self, node):
-        return LetNode(self.visit(node.name), self.visit(node.value), self.visit(node.body))
+        return LetNode(node.span, self.visit(node.name), self.visit(node.value), self.visit(node.body))
 
     def visit_expression_node(self, node):
         return ExpressionNode(self.visit(node.nodes))
+
+    def visit_parenthesised_expression_node(self, node):
+        return ParenthesisedExpressionNode(node.span, self.visit(node.expression))
 
     def visit_binary_expression_node(self, node):
         return BinaryExpressionNode(self.visit(node.left), self.visit(node.operator), self.visit(node.right))
@@ -31,6 +34,7 @@ class ASTTransformer(Visitor):
 
     def visit_if_node(self, node):
         return IfNode(
+            node.span,
             self.visit(node.condition),
             self.visit(node.true_branch),
             self.visit(node.false_branch)

@@ -10,16 +10,16 @@ const w = "world"
 """
 
 source_code = """
-const x = 
+const x =
     if x + y == 1 then
-        2 + (x y) $ z w * 1
+        if true then
+            2 + (x y) $ z w * 1
+        else
+            0
     else
         (_ + x)
 """
 
-source_code = """
-const x = 1 + f $ 1
-"""
 
 src = source.Source("main", source_code)
 
@@ -60,12 +60,13 @@ precedence_table = {
     '*': ast.expressions.Precedence(7, ast.expressions.Associativity.LEFT),
 }
 
-expression_transformer = ast.expressions.ExpressionTransformer(
-    precedence_table, report)
-transformed = expression_transformer.visit(result.value)
+if not report.has_errors():
+    expression_transformer = ast.expressions.ExpressionTransformer(
+        precedence_table, report)
+    transformed = expression_transformer.visit(result.value)
 
-print("Transformed AST:")
-printer.print_node(transformed)
+    print("Transformed AST:")
+    printer.print_node(transformed)
 
 error_printer = errors.SimpleErrorPrinter()
 error_printer.print(report)

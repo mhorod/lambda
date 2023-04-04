@@ -1,4 +1,5 @@
-from typing import Callable, List, Any
+from typing import Callable, List, Tuple
+
 from lmd.tokens import *
 from lmd.errors import *
 from lmd.ast.nodes import *
@@ -36,6 +37,7 @@ class Cursor:
     def __init__(self, tokens: List[Token], index: int = 0):
         self.tokens = tokens
         self.index = index
+        self.consumed_begin = index
 
     def clone(self) -> "Cursor":
         return Cursor(self.tokens, self.index)
@@ -198,11 +200,14 @@ def remove_none(xs: List) -> List:
 
 
 def parse_program(cursor: Cursor) -> Result:
-    result = Result.Ok(cursor, [], [])
-    while result.cursor.has() and result.ok:
-        parsed = parse_statement(result.cursor.clone())
-        result = result.merge(parsed, lambda x, y: x + [y])
-    result.value = ProgramNode(remove_none(flatten(result.value)))
+    def program_parser(cursor: Cursor):
+        result = Result.Ok(cursor, [], [])
+        while result.cursor.has() and result.ok:
+            parsed = parse_statement(result.cursor.clone())
+            result = result.merge(parsed, lambda x, y: x + [y])
+        return result
+    result, span = parse_with_span(program_parser, cursor)
+    result.value = ProgramNode(span, remove_none(flatten(result.value)))
     return result
 
 
@@ -228,8 +233,8 @@ def parse_const(cursor: Cursor) -> Result:
         .then(parse_kind(Identifier())) \
         .then(parse_kind(Symbol(SymbolType.ASSIGN))).drop() \
         .then(parse_expression)
-    result = parser(cursor)
-    result.value = ConstNode(*result.value)
+    result, span = parse_with_span(parser, cursor)
+    result.value = ConstNode(span, *result.value)
     return result
 
 
@@ -242,8 +247,8 @@ def parse_let(cursor: Cursor) -> Result:
         .then(parse_kind(Keyword(KeywordType.IN))).drop() \
         .then(parse_expression)
 
-    result = parser(cursor)
-    result.value = LetNode(*result.value)
+    result, span = parse_with_span(parser, cursor)
+    result.value = LetNode(span, *result.value)
     return result
 
 
@@ -270,7 +275,9 @@ def parse_parenthesised_expression(cursor: Cursor) -> Result:
         .then(commit(parse_kind(OpenDelimiter(DelimiterType.PAREN)))).drop() \
         .then(parse_expression) \
         .then(parse_kind(CloseDelimiter(DelimiterType.PAREN))).drop()
-    return parser(cursor)
+    result, span = parse_with_span(parser, cursor)
+    result.value = ParenthesisedExpressionNode(span, *result.value)
+    return result
 
 
 def parse_expression_term(cursor: Cursor) -> Result:
@@ -299,6 +306,18 @@ def parse_if_expression(cursor: Cursor) -> Result:
         .then(parse_expression) \
         .then(parse_kind(Keyword(KeywordType.ELSE))).drop() \
         .then(parse_expression)
-    result = parser(cursor)
-    result.value = IfNode(*result.value)
+    result, span = parse_with_span(parser, cursor)
+    result.value = IfNode(span, *result.value)
     return result
+
+
+def parse_with_span(parser: Parser, cursor: Cursor) -> Tuple[Result, Span]:
+    begin = cursor.peek_one().span.begin
+    source = cursor.peek_one().span.source
+    result = parser(cursor)
+    if result.cursor.eof():
+        end = result.cursor.peek_one().span.end
+    else:
+        end = result.cursor.peek_one().span.begin
+    span = Span(source, begin, end)
+    return result, span

@@ -1,21 +1,35 @@
-class ProgramNode:
-    def __init__(self, statements):
+from typing import List
+
+from lmd.source import Span, wrapping_span
+from lmd.tokens import Token
+
+
+class Node:
+    def __init__(self, span: Span):
+        self.span = span
+
+
+class ProgramNode(Node):
+    def __init__(self, span: Span, statements):
+        super().__init__(span)
         self.statements = statements
 
     def __repr__(self):
         return f"program ({self.statements})"
 
 
-class TokenNode:
-    def __init__(self, token):
+class TokenNode(Node):
+    def __init__(self, token: Token):
+        super().__init__(token.span)
         self.token = token
 
     def __repr__(self):
         return f"token ({self.token})"
 
 
-class ConstNode:
-    def __init__(self, name, value):
+class ConstNode(Node):
+    def __init__(self, span: Span, name: Node, value: Node):
+        super().__init__(span)
         self.name = name
         self.value = value
 
@@ -23,8 +37,9 @@ class ConstNode:
         return f"const ({self.name}) = ({self.value})"
 
 
-class LetNode:
-    def __init__(self, name, value, body):
+class LetNode(Node):
+    def __init__(self, span: Span, name, value, body):
+        super().__init__(span)
         self.name = name
         self.value = value
         self.body = body
@@ -33,29 +48,43 @@ class LetNode:
         return f"let ({self.name}) = ({self.value}) in ({self.body})"
 
 
-class ExpressionNode:
-    def __init__(self, nodes):
+class ExpressionNode(Node):
+    def __init__(self, nodes: List[Node]):
+        super().__init__(wrapping_span([node.span for node in nodes]))
         self.nodes = nodes
 
     def __repr__(self):
         return f"expr ({self.nodes})"
 
 
-class BinaryExpressionNode:
-    def __init__(self, left, operator, right):
+class ParenthesisedExpressionNode(Node):
+    def __init__(self, span: Span, expression: Node):
+        super().__init__(span)
+        self.expression = expression
+
+    def __repr__(self):
+        return f"paren_expr ({self.expression})"
+
+
+class BinaryExpressionNode(Node):
+    def __init__(self, left: Node, operator: Node, right: Node):
+        super().__init__(wrapping_span([left.span, operator.span, right.span]))
         self.left = left
         self.operator = operator
         self.right = right
 
 
-class FunctionCallNode:
-    def __init__(self, function, arguments):
+class FunctionCallNode(Node):
+    def __init__(self, function: Node, arguments: Node):
+        spans = [function.span] + [argument.span for argument in arguments]
+        super().__init__(wrapping_span(spans))
         self.function = function
         self.arguments = arguments
 
 
-class IfNode:
-    def __init__(self, condition, true_branch, false_branch):
+class IfNode(Node):
+    def __init__(self, span: Span, condition: Node, true_branch: Node, false_branch: Node):
+        super().__init__(span)
         self.condition = condition
         self.true_branch = true_branch
         self.false_branch = false_branch
@@ -85,6 +114,8 @@ class ASTPrinter:
             return self.print_let_node(node)
         elif isinstance(node, ExpressionNode):
             return self.print_expression_node(node)
+        elif isinstance(node, ParenthesisedExpressionNode):
+            return self.print_parenthesised_expression_node(node)
         elif isinstance(node, BinaryExpressionNode):
             return self.print_binary_expression_node(node)
         elif isinstance(node, FunctionCallNode):
@@ -101,7 +132,7 @@ class ASTPrinter:
         self.unindent()
 
     def print_program_node(self, node):
-        self.print("program")
+        self.print(f"{node.span} program")
         self.indent()
         for n in node.statements:
             self.print_node(n)
@@ -114,7 +145,7 @@ class ASTPrinter:
         self.unindent()
 
     def print_const_node(self, node):
-        self.print("const")
+        self.print(f"{node.span} const")
         self.indent()
         self.print_node(node.name)
         self.print_node(node.value)
@@ -133,14 +164,20 @@ class ASTPrinter:
         self.unindent()
 
     def print_expression_node(self, node):
-        self.print("expr")
+        self.print(f"{node.span} expr")
         self.indent()
         for n in node.nodes:
             self.print_node(n)
         self.unindent()
 
+    def print_parenthesised_expression_node(self, node):
+        self.print(f"{node.span} paren_expr")
+        self.indent()
+        self.print_node(node.expression)
+        self.unindent()
+
     def print_binary_expression_node(self, node):
-        self.print("binary")
+        self.print(f"{node.span} binary")
         self.indent()
 
         self.print("left")
@@ -161,7 +198,7 @@ class ASTPrinter:
         self.unindent()
 
     def print_function_call_node(self, node):
-        self.print("call")
+        self.print(f"{node.span} call")
         self.indent()
         self.print_node(node.function)
         for n in node.arguments:
@@ -169,7 +206,7 @@ class ASTPrinter:
         self.unindent()
 
     def print_if_node(self, node):
-        self.print("if")
+        self.print(f"{node.span} if")
         self.indent()
         self.print_node(node.condition)
         self.unindent()

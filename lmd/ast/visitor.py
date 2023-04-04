@@ -17,6 +17,8 @@ class Visitor:
             return self.visit_let_node(node)
         elif isinstance(node, ExpressionNode):
             return self.visit_expression_node(node)
+        elif isinstance(node, ParenthesisedExpressionNode):
+            return self.visit_parenthesised_expression_node(node)
         elif isinstance(node, BinaryExpressionNode):
             return self.visit_binary_expression_node(node)
         elif isinstance(node, FunctionCallNode):
@@ -39,6 +41,9 @@ class Visitor:
         return NotImplemented
 
     def visit_expression_node(self, node):
+        return NotImplemented
+
+    def visit_parenthesised_expression_node(self, node):
         return NotImplemented
 
     def visit_binary_expression_node(self, node):

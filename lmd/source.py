@@ -45,6 +45,12 @@ class Span:
         return self.end - self.begin
 
 
+def wrapping_span(spans):
+    begin = min(span.begin for span in spans)
+    end = max(span.end for span in spans)
+    return Span(spans[0].source, begin, end)
+
+
 @dataclass
 class LineCol:
     source: Source

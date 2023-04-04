@@ -22,6 +22,9 @@ class ErrorReport:
     def add(self, error):
         self.errors.append(error)
 
+    def has_errors(self):
+        return len(self.errors) > 0
+
 
 class SimpleErrorPrinter:
     def print(self, error_report):
