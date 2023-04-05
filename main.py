@@ -17,41 +17,41 @@ const x =
         else
             0
     else
-        (_ + x)
+        (_ ++ x)
 """
 
+class Pipeline:
+    def __init__(self):
+        self.phases = []
 
-src = source.Source("main", source_code)
+    def then(self, phase):
+        self.phases.append(phase)
+        return self
 
-lexed = lex.lex_source(src)
+    def run(self, initial_value, error_printer):
+        value = initial_value
+        report = errors.ErrorReport()
+        for phase in self.phases:
+            value = phase(value, report)
+            if report.has_errors():
+                error_printer.print_error_report(report)
+                return value
+        return value
 
-print("Lexed tokens:")
-for token in lexed:
-    print(token)
-print()
+def lex_source(source, _):
+    return lex.lex_source(source)
 
-report = errors.ErrorReport()
-cooked = cook.cook_tokens(lexed, report)
-errors.SimpleErrorPrinter().print(report)
-
-print()
-print("Cooked tokens:")
-for token in cooked:
-    print(token)
-
-print()
-cooked = [token for token in cooked
+def filter_whitespace(cooked_tokens, _):
+    return [token for token in cooked_tokens
           if not token.kind.extends(tokens.Comment())
           and not token.kind.extends(tokens.Whitespace())]
 
-result = parse.parse_program(parse.Cursor(cooked))
-for error in result.errors:
-    report.add(error)
+def transform_expressions(transformer):
+    def f(ast, report):
+        return transformer.transform(ast, report)
+    return f
 
-
-print("Parsed AST:")
-printer = ast.printer.ASTPrinter()
-printer.visit(result.value)
+src = source.Source("main", source_code)
 
 precedence_table = {
     '$': ast.expressions.Precedence(0, ast.expressions.Associativity.LEFT),
@@ -60,13 +60,17 @@ precedence_table = {
     '*': ast.expressions.Precedence(7, ast.expressions.Associativity.LEFT),
 }
 
-if not report.has_errors():
-    expression_transformer = ast.expressions.ExpressionTransformer(
-        precedence_table, report)
-    transformed = expression_transformer.visit(result.value)
-
-    print("Transformed AST:")
-    printer.visit(transformed)
-
+expression_transformer = ast.expressions.ExpressionTransformer(precedence_table)
 error_printer = errors.SimpleErrorPrinter()
-error_printer.print(report)
+
+pipeline = Pipeline()\
+    .then(lex_source)\
+    .then(cook.cook_tokens)\
+    .then(filter_whitespace)\
+    .then(parse.parse_tokens)\
+    .then(transform_expressions(expression_transformer))\
+
+
+parsed = pipeline.run(src, error_printer)
+ast_printer = ast.printer.ASTPrinter()
+ast_printer.visit(parsed)

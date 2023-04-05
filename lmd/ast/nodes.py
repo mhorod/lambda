@@ -8,7 +8,6 @@ class Node:
     def __init__(self, span: Span):
         self.span = span
 
-
 class ProgramNode(Node):
     def __init__(self, span: Span, statements):
         super().__init__(span)

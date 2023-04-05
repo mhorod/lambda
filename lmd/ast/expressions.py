@@ -20,10 +20,14 @@ class Precedence:
 
 
 class ExpressionTransformer(ASTTransformer):
-    def __init__(self, precedence_table, error_report):
+    def __init__(self, precedence_table):
         self.precedence_table = precedence_table
-        self.error_report = error_report
         self.failed = False
+
+    def transform(self, ast, report):
+        self.error_report = report
+        self.failed = False
+        return self.visit(ast)
 
     def visit_expression_node(self, node):
         self.failed = False

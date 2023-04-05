@@ -198,6 +198,11 @@ def flatten(xs: List[List]) -> List:
 def remove_none(xs: List) -> List:
     return [x for x in xs if x is not None]
 
+def parse_tokens(tokens, error_report):
+    result = parse_program(Cursor(tokens))
+    for error in result.errors:
+        error_report.add(error)
+    return result.value
 
 def parse_program(cursor: Cursor) -> Result:
     def program_parser(cursor: Cursor):
@@ -266,7 +271,10 @@ def parse_expression(cursor: Cursor) -> Result:
         .map(remove_none)
 
     result = parser(cursor)
-    result.value = ExpressionNode(result.value)
+    if result.value:
+        result.value = ExpressionNode(result.value)
+    else:
+        result.value = None
     return result
 
 
