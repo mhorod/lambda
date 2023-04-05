@@ -73,4 +73,3 @@ pipeline = Pipeline()\
 
 parsed = pipeline.run(src, error_printer)
 ast_printer = ast.printer.ASTPrinter()
-ast_printer.visit(parsed)

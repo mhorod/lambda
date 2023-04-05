@@ -46,6 +46,10 @@ class ExpressionTransformer(ASTTransformer):
             operator = nodes[0]
             nodes = nodes[1:]
 
+            if operator.token.text not in self.precedence_table:
+                self.unknown_operator(operator)
+                return None, None
+
             rhs, nodes = self.parse_expr(nodes, previous_operator)
             node = BinaryExpressionNode(node, operator, rhs)
             previous_operator = operator
@@ -81,14 +85,16 @@ class ExpressionTransformer(ASTTransformer):
         right_op = right.token.text
 
         if right_op not in self.precedence_table:
-            message = Message(right.token.span,
-                              f"Unknown operator: `{right_op}`")
-            error = Error(message)
-            self.error_report.add(error)
-            self.failed = True
+            self.unknown_operator(right)
             return False
 
         if left_op == right_op:
             return self.precedence_table[left_op].associativity == Associativity.RIGHT
         else:
             return self.precedence_table[left_op].priority < self.precedence_table[right_op].priority
+
+    def unknown_operator(self, node):
+        message = Message(node.span, f"Unknown operator: `{node.token.text}`")
+        error = Error(message)
+        self.error_report.add(error)
+        self.failed = True
