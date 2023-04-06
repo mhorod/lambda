@@ -1,7 +1,7 @@
 
 from enum import Enum, auto
 
-from lmd.source import *
+from lmd.util.source import *
 from lmd.util.token import *
 
 

@@ -1,7 +1,7 @@
 from typing import Callable, List, Tuple
 
-from lmd.tokens import *
-from lmd.errors import *
+from lmd.cooking.tokens import *
+from lmd.util.error import *
 from lmd.ast.nodes import *
 
 
@@ -198,11 +198,13 @@ def flatten(xs: List[List]) -> List:
 def remove_none(xs: List) -> List:
     return [x for x in xs if x is not None]
 
+
 def parse_tokens(tokens, error_report):
     result = parse_program(Cursor(tokens))
     for error in result.errors:
         error_report.add(error)
     return result.value
+
 
 def parse_program(cursor: Cursor) -> Result:
     def program_parser(cursor: Cursor):

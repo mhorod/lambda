@@ -5,7 +5,7 @@ This is the first step before actual parsing, no errors are reported here.
 
 import string
 
-from lmd.source import *
+from lmd.util.source import *
 from lmd.lexing.cursor import Cursor
 from lmd.lexing.raw_token import *
 

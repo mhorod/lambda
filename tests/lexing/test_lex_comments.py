@@ -1,7 +1,7 @@
 import unittest
 
 from lmd.lexing.lex import *
-from lmd.source import *
+from lmd.util.source import *
 
 
 def make_src(s):

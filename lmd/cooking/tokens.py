@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, auto
 
-import lmd.source
+import lmd.util.source
 
 
 class TokenType(Enum):
@@ -17,6 +17,7 @@ class TokenType(Enum):
     CLOSE_DELIMITER = auto()
     UNKNOWN = auto()
     EOF = auto()
+
 
 class TokenKind:
     def __init__(self, token_type: TokenType):
@@ -44,9 +45,12 @@ class TokenKind:
         return f"{type(self).__name__}"
 
 # Aliases for simpler groups
+
+
 class Eof(TokenKind):
     def __init__(self):
         super().__init__(TokenType.EOF)
+
 
 class Comment(TokenKind):
     def __init__(self):
@@ -176,7 +180,7 @@ class Symbol(TokenKind):
 
 @dataclass
 class Token:
-    span: lmd.source.Span
+    span: lmd.util.source.Span
     kind: TokenKind
     text: str
 

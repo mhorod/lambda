@@ -1,29 +1,4 @@
-from typing import List
-
-from lmd import source
-
-
-class Message:
-    def __init__(self, span, comment):
-        self.span = span
-        self.comment = comment
-
-
-class Error:
-    def __init__(self, reason: Message, messages: List[Message] = None):
-        self.reason = reason
-        self.messages = messages or []
-
-
-class ErrorReport:
-    def __init__(self):
-        self.errors = []
-
-    def add(self, error):
-        self.errors.append(error)
-
-    def has_errors(self):
-        return len(self.errors) > 0
+from lmd.util.error import *
 
 
 class SimpleErrorPrinter:

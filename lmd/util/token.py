@@ -4,7 +4,7 @@ Generic token i.e. segment of source code with some description
 
 from dataclasses import dataclass
 
-from lmd.source import Span
+from lmd.util.source import Span
 
 
 class TokenKind:

@@ -1,10 +1,10 @@
 from enum import Enum, auto
 from dataclasses import dataclass
 
-from lmd.tokens import *
+from lmd.cooking.tokens import *
 from lmd.ast.nodes import *
 from lmd.ast.transformer import ASTTransformer
-from lmd.errors import *
+from lmd.util.error import *
 
 
 class Associativity(Enum):

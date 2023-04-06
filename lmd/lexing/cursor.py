@@ -1,4 +1,4 @@
-from lmd.source import *
+from lmd.util.source import *
 
 
 class Cursor:

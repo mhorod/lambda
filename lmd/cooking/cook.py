@@ -1,8 +1,9 @@
 from typing import List
 
 from lmd.lexing import *
-from lmd.tokens import *
-from lmd.errors import *
+from lmd.cooking.tokens import *
+
+from lmd.util.error import *
 
 
 def cook_tokens(tokens: List[Token], error_report: ErrorReport) -> List[Token]:

@@ -31,7 +31,7 @@ class Pipeline:
 
     def run(self, initial_value, error_printer):
         value = initial_value
-        report = errors.ErrorReport()
+        report = util.error.ErrorReport()
         for phase in self.phases:
             value = phase(value, report)
             if report.has_errors():
@@ -56,7 +56,7 @@ def transform_expressions(transformer):
     return f
 
 
-src = source.Source("main", source_code)
+src = util.source.Source("main", source_code)
 
 precedence_table = {
     '$': ast.expressions.Precedence(0, ast.expressions.Associativity.LEFT),
@@ -67,15 +67,15 @@ precedence_table = {
 
 expression_transformer = ast.expressions.ExpressionTransformer(
     precedence_table)
-error_printer = errors.SimpleErrorPrinter()
+error_printer = output.error.SimpleErrorPrinter()
 
 pipeline = Pipeline()\
     .then(lex_source)\
-    .then(cook.cook_tokens)\
+    .then(cooking.cook.cook_tokens)\
     .then(filter_whitespace)\
-    .then(parse.parse_tokens)\
+    .then(parsing.parse.parse_tokens)\
     .then(transform_expressions(expression_transformer))\
 
 
 parsed = pipeline.run(src, error_printer)
-ast_printer = ast.printer.ASTPrinter()
+ast_printer = output.ast.ASTPrinter()
