@@ -51,3 +51,17 @@ class TestLexStrings(unittest.TestCase):
                           String(True), '"a\\nb\\tc\\\\"')]
         actual = lex_source(src)
         self.assertEqual(actual, expected)
+
+    def test_lex_unterminated_string(self):
+        text = '"abc'
+        src = make_src(text)
+        expected = [Token(Span(src, 0, len(text)), String(False), '"abc')]
+        actual = lex_source(src)
+        self.assertEqual(actual, expected)
+
+    def test_lex_unterminated_string_with_escaped_quote(self):
+        text = '"a\\"'
+        src = make_src(text)
+        expected = [Token(Span(src, 0, len(text)), String(False), '"a\\"')]
+        actual = lex_source(src)
+        self.assertEqual(actual, expected)
