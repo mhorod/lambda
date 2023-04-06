@@ -2,6 +2,7 @@ from typing import List
 
 from lmd.lexing import *
 from lmd.cooking.tokens import *
+from lmd.util.token import Token
 
 from lmd.util.error import *
 

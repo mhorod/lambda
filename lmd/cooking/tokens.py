@@ -1,7 +1,10 @@
-from dataclasses import dataclass
+'''
+Definition of rich tokens used by the parser
+'''
+
 from enum import Enum, auto
 
-import lmd.util.source
+from lmd.util.token import TokenKind
 
 
 class TokenType(Enum):
@@ -19,34 +22,7 @@ class TokenType(Enum):
     EOF = auto()
 
 
-class TokenKind:
-    def __init__(self, token_type: TokenType):
-        self.token_type = token_type
-
-    def extends(self, base):
-        if not isinstance(self, type(base)):
-            return False
-        for attr, base_value in base.kind_attrs().items():
-            if getattr(self, attr) != base_value:
-                return False
-        return True
-
-    def kind_attrs(self):
-        '''
-        Get attributes that describe the kind 
-        '''
-        return {
-            k: self.__dict__[k]
-            for k in self.__dict__.keys()
-            if not k.startswith('_')
-        }
-
-    def __str__(self):
-        return f"{type(self).__name__}"
-
 # Aliases for simpler groups
-
-
 class Eof(TokenKind):
     def __init__(self):
         super().__init__(TokenType.EOF)
@@ -176,22 +152,3 @@ class Symbol(TokenKind):
     def __init__(self, symbol_type: SymbolType):
         super().__init__(TokenType.SYMBOL)
         self.symbol_type = symbol_type
-
-
-@dataclass
-class Token:
-    span: lmd.util.source.Span
-    kind: TokenKind
-    text: str
-
-    def __eq__(self, other):
-        if type(self) != type(other):
-            return False
-        elif self.kind != other.kind:
-            return False
-        elif self.text != other.text:
-            return False
-        return True
-
-    def __str__(self):
-        return f'{self.span}: {self.kind} {repr(self.text)}'

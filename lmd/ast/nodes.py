@@ -1,7 +1,7 @@
 from typing import List
 
 from lmd.util.source import Span, wrapping_span
-from lmd.cooking.tokens import Token
+from lmd.util.token import Token
 
 
 class Node:
