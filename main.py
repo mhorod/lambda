@@ -20,6 +20,7 @@ const x =
         (_ ++ x)
 """
 
+
 class Pipeline:
     def __init__(self):
         self.phases = []
@@ -38,18 +39,22 @@ class Pipeline:
                 return value
         return value
 
+
 def lex_source(source, _):
-    return lex.lex_source(source)
+    return lexing.lex.lex_source(source)
+
 
 def filter_whitespace(cooked_tokens, _):
     return [token for token in cooked_tokens
-          if not token.kind.extends(tokens.Comment())
-          and not token.kind.extends(tokens.Whitespace())]
+            if not token.kind.extends(tokens.Comment())
+            and not token.kind.extends(tokens.Whitespace())]
+
 
 def transform_expressions(transformer):
     def f(ast, report):
         return transformer.transform(ast, report)
     return f
+
 
 src = source.Source("main", source_code)
 
@@ -60,7 +65,8 @@ precedence_table = {
     '*': ast.expressions.Precedence(7, ast.expressions.Associativity.LEFT),
 }
 
-expression_transformer = ast.expressions.ExpressionTransformer(precedence_table)
+expression_transformer = ast.expressions.ExpressionTransformer(
+    precedence_table)
 error_printer = errors.SimpleErrorPrinter()
 
 pipeline = Pipeline()\

@@ -44,7 +44,6 @@ class Span:
     def len(self):
         return self.end - self.begin
 
-
 def wrapping_span(spans):
     begin = min(span.begin for span in spans)
     end = max(span.end for span in spans)

@@ -1,43 +1,45 @@
 from typing import List
 
-from lmd import lex
+from lmd.lexing import *
 from lmd.tokens import *
 from lmd.errors import *
 
 
-def cook_tokens(tokens: List[lex.RawToken], error_report: ErrorReport) -> List[Token]:
+def cook_tokens(tokens: List[Token], error_report: ErrorReport) -> List[Token]:
     cooked = []
-    group_to_cooker = {
-        lex.TokenGroup.WHITESPACE: cook_whitespace,
-        lex.TokenGroup.COMMENT: cook_comment,
-        lex.TokenGroup.LITERAL: cook_literal,
-        lex.TokenGroup.NAME: cook_name,
-        lex.TokenGroup.DELIMITER: cook_delimiter,
-        lex.TokenGroup.OPERATOR: cook_operator_or_symbol,
-        lex.TokenGroup.SYMBOL: cook_operator_or_symbol,
-        lex.TokenGroup.UNKNOWN: cook_unknown,
-    }
+    kind_to_cooker = [
+        (raw_token.Whitespace(), cook_whitespace),
+        (raw_token.TokenKind(raw_token.RawTokenType.COMMENT), cook_comment),
+        (raw_token.TokenKind(raw_token.RawTokenType.LITERAL), cook_literal),
+        (raw_token.Name(), cook_name),
+        (raw_token.Delimiter(), cook_delimiter),
+        (raw_token.Operator(), cook_operator_or_symbol),
+        (raw_token.Symbol(), cook_operator_or_symbol),
+        (raw_token.Unknown(), cook_unknown),
+    ]
 
     for token in tokens:
-        cooked.append(group_to_cooker[token.group](token, error_report))
-
+        for kind, cooker in kind_to_cooker:
+            if token.kind.extends(kind):
+                cooked.append(cooker(token, error_report))
+                break
     return cooked
 
 
-def make_token(raw_token: lex.RawToken, kind: TokenKind):
-    return Token(raw_token.span, kind, raw_token.text)
+def make_token(raw_token: Token, new_kind: TokenKind):
+    return Token(raw_token.span, new_kind, raw_token.text)
 
 
-def cook_whitespace(token: lex.RawToken, error_report: ErrorReport) -> Token:
+def cook_whitespace(token: Token, error_report: ErrorReport) -> Token:
     return make_token(token, Whitespace())
 
 
-def cook_comment(token: lex.RawToken, error_report: ErrorReport) -> Token:
+def cook_comment(token: Token, error_report: ErrorReport) -> Token:
     return make_token(token, Comment())
 
 
-def cook_literal(token: lex.RawToken, error_report: ErrorReport) -> Token:
-    if token.type == lex.LiteralType.NUMBER:
+def cook_literal(token: Token, error_report: ErrorReport) -> Token:
+    if token.kind.literal_type == lex.LiteralType.NUMBER:
         return make_token(token, Number(int(token.text)))
     else:
         if not token.terminated:
@@ -50,7 +52,7 @@ def cook_literal(token: lex.RawToken, error_report: ErrorReport) -> Token:
 
 
 KEYWORDS = {
-    'const' : KeywordType.CONST,
+    'const': KeywordType.CONST,
     'let': KeywordType.LET,
     'in': KeywordType.IN,
     'if': KeywordType.IF,
@@ -68,7 +70,7 @@ BOOLS = {
 }
 
 
-def cook_name(token: lex.RawToken, error_report: ErrorReport) -> Token:
+def cook_name(token: Token, error_report: ErrorReport) -> Token:
     if token.text in KEYWORDS:
         return make_token(token, Keyword(KEYWORDS[token.text]))
     elif token.text in BOOLS:
@@ -89,9 +91,10 @@ PARENS = {
 }
 
 
-def cook_delimiter(token: lex.RawToken, error_report: ErrorReport) -> Token:
+def cook_delimiter(token: Token, error_report: ErrorReport) -> Token:
     Kind, delimiter_type = PARENS[token.text]
     return make_token(token, Kind(delimiter_type))
+
 
 SYMBOLS = {
     ':': SymbolType.COLON,
@@ -101,16 +104,15 @@ SYMBOLS = {
     '=': SymbolType.ASSIGN,
 }
 
-def cook_operator_or_symbol(token: lex.RawToken, error_report: ErrorReport) -> Token:
+
+def cook_operator_or_symbol(token: Token, error_report: ErrorReport) -> Token:
     if token.text in SYMBOLS:
         return make_token(token, Symbol(SYMBOLS[token.text]))
     else:
         return make_token(token, Operator())
 
 
-
-
-def cook_unknown(token: lex.RawToken, error_report: ErrorReport) -> Token:
+def cook_unknown(token: Token, error_report: ErrorReport) -> Token:
     message = Message(token.span, f"Unknown token: `{token.text}`")
     error_report.add(Error(message))
     return make_token(token, Unknown())

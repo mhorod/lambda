@@ -2,7 +2,8 @@ from enum import Enum, auto
 
 import unittest
 
-from lmd.tokens import *
+from lmd.util.token import *
+
 
 class MockTokenType(Enum):
     SIMPLE = auto()
@@ -11,6 +12,7 @@ class MockTokenType(Enum):
 class MockType(Enum):
     ONE = auto()
     TWO = auto()
+
 
 class MockKind(TokenKind):
     def __init__(self, simple_type: MockType):
@@ -23,10 +25,12 @@ class MockOne(MockKind):
         super().__init__(MockType.ONE)
         self.value_one = value_one
 
+
 class MockTwo(MockKind):
     def __init__(self, value_two):
         super().__init__(MockType.TWO)
         self.value_two = value_two
+
 
 class TestTokens(unittest.TestCase):
     def test_kind_extends_itself(self):
