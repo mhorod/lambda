@@ -1,10 +1,12 @@
-from typing import List
+from typing import List, Tuple
 
 from lmd.lexing import *
-from lmd.cooking.tokens import *
-from lmd.util.token import Token
 
+from lmd.util.token import Token
 from lmd.util.error import *
+
+from lmd.cooking.tokens import *
+from lmd.cooking.error import *
 
 
 def cook_tokens(tokens: List[Token], error_report: ErrorReport) -> List[Token]:
@@ -37,20 +39,134 @@ def cook_whitespace(token: Token, error_report: ErrorReport) -> Token:
 
 
 def cook_comment(token: Token, error_report: ErrorReport) -> Token:
+    if not token.kind.terminated:
+        error_report.add(unterminated_comment(token))
     return make_token(token, Comment())
 
 
 def cook_literal(token: Token, error_report: ErrorReport) -> Token:
     if token.kind.literal_type == lex.LiteralType.NUMBER:
-        return make_token(token, Number(int(token.text)))
+        return cook_number(token, error_report)
     else:
-        if not token.terminated:
-            message = Message(token.span, f"Unterminated string")
-            error_report.add(Error(message))
-            content = token.text[1:]
+        return cook_string(token, error_report)
+
+
+PREFIX_TO_BASE = {
+    '0x': 16,
+    '0o': 8,
+    '0b': 2,
+}
+
+BASE_TO_FLOAT_ERROR = {
+    16: hex_float_not_supported,
+    8: octal_float_not_supported,
+    2: binary_float_not_supported,
+}
+
+BASE_TO_DIGITS = {
+    2: '01',
+    8: '01234567',
+    10: '0123456789',
+    16: '0123456789ABCDEFabcdef'
+}
+
+TEXT_TO_SUFFIX = {
+    'u': NumericalSuffix.UNSIGNED,
+    'f': NumericalSuffix.FLOAT,
+    '': None,
+}
+
+
+def cook_number(token: Token, error_report: ErrorReport) -> Token:
+    _, _, suffix = split_number(token)
+    if suffix and suffix not in TEXT_TO_SUFFIX:
+        error_report.add(invalid_number_suffix(token, suffix))
+        return make_token(token, Invalid())
+
+    if token.text.count('.') > 0 or is_float_suffix(suffix):
+        return cook_float(token, error_report)
+    else:
+        return cook_integer(token, error_report)
+
+
+def is_float_suffix(suffix: str) -> bool:
+    return suffix == 'f'
+
+
+def split_number(token: Token) -> Tuple[str, str, str]:
+    if token.kind.base != 10:
+        prefix = token.text[:2]
+        text = token.text[2:]
+    else:
+        prefix = ''
+        text = token.text
+
+    digits = BASE_TO_DIGITS[token.kind.base]
+    number = ''
+    for c in text:
+        if c == '.' or c in digits:
+            number += c
         else:
-            content = token.text[1:-1]
-        return make_token(token, String(content))
+            break
+    suffix = text[len(number):]
+    return prefix, number, suffix
+
+
+def cook_float(token: Token, error_report: ErrorReport) -> Token:
+    dots = token.text.count('.')
+    if dots > 1:
+        error_report.add(invalid_float_literal(token))
+        return make_token(token, Invalid())
+    elif token.kind.base != 10:
+        error_report.add(BASE_TO_FLOAT_ERROR[token.kind.base](token))
+        return make_token(token, Invalid())
+    else:
+        _, number, suffix = split_number(token)
+        suffix = TEXT_TO_SUFFIX[suffix]
+        return make_token(token, Float(float(number), suffix))
+
+
+def cook_integer(token: Token, error_report: ErrorReport) -> Token:
+    _, number, suffix = split_number(token)
+    base = token.kind.base
+    if not number:
+        error_report.add(number_without_digits(token))
+        return make_token(token, Invalid())
+    else:
+        suffix = TEXT_TO_SUFFIX[suffix]
+        return make_token(token, Integer(base, int(number, base), suffix))
+
+
+def cook_string(token: Token, error_report: ErrorReport) -> Token:
+    if not token.kind.terminated:
+        error_report.add(unterminated_string(token))
+        content = token.text[1:]
+    else:
+        content = token.text[1:-1]
+    content = unescape(content)
+    return make_token(token, String(content))
+
+
+ESCAPES = {
+    '"': '"',
+    'n': '\n',
+    't': '\t',
+    '\\': '\\',
+    'r':  '\r'
+}
+
+
+def unescape(text: str) -> str:
+    result = ''
+    i = 0
+    while i < len(text):
+        if text[i] == '\\' and i + 1 < len(text) and text[i + 1] in ESCAPES:
+            result += ESCAPES[text[i + 1]]
+            i += 2
+        else:
+            result += text[i]
+            i += 1
+    return result
 
 
 KEYWORDS = {
@@ -115,6 +231,5 @@ def cook_operator_or_symbol(token: Token, error_report: ErrorReport) -> Token:
 
 
 def cook_unknown(token: Token, error_report: ErrorReport) -> Token:
-    message = Message(token.span, f"Unknown token: `{token.text}`")
-    error_report.add(Error(message))
+    error_report.add(unknown_token(token))
     return make_token(token, Unknown())

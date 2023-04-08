@@ -19,6 +19,7 @@ class TokenType(Enum):
     OPEN_DELIMITER = auto()
     CLOSE_DELIMITER = auto()
     UNKNOWN = auto()
+    INVALID = auto()
     EOF = auto()
 
 
@@ -51,6 +52,11 @@ class Identifier(TokenKind):
 class Unknown(TokenKind):
     def __init__(self):
         super().__init__(TokenType.UNKNOWN)
+
+
+class Invalid(TokenKind):
+    def __init__(self):
+        super().__init__(TokenType.INVALID)
 
 
 class Operator(TokenKind):
@@ -95,13 +101,44 @@ class Literal(TokenKind):
         return f"Literal({self.literal_type})"
 
 
+class NumberType(Enum):
+    INT = auto()
+    FLOAT = auto()
+
+
 class Number(Literal):
-    def __init__(self, number_value):
+    def __init__(self, number_type: NumberType):
         super().__init__(LiteralType.NUMBER)
-        self.number_value = number_value
+        self.number_type = number_type
 
     def __str__(self):
-        return f"Number({self.number_value})"
+        return f"Number({self.number_type})"
+
+
+class NumericalSuffix(Enum):
+    UNSIGNED = auto()
+    FLOAT = auto()
+
+
+class Integer(Number):
+    def __init__(self, base: int, int_value: int, suffix: NumericalSuffix = None):
+        super().__init__(NumberType.INT)
+        self.base = base
+        self.int_value = int_value
+        self.suffix = suffix
+
+    def __str__(self):
+        return f"Integer({self.int_value})"
+
+
+class Float(Number):
+    def __init__(self, float_value: float, suffix: NumericalSuffix = None):
+        super().__init__(NumberType.FLOAT)
+        self.float_value = float_value
+        self.suffix = suffix
+
+    def __str__(self):
+        return f"Float({self.float_value})"
 
 
 class String(Literal):

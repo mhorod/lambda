@@ -15,7 +15,7 @@ const x =
         if true then
             2 + (x y) $ z w * 1
         else
-            0
+            0b
     else
         (_ ++ x)
 """
