@@ -152,7 +152,7 @@ class String(Literal):
 
 class Bool(Literal):
     def __init__(self, bool_value: bool):
-        super().__init__(self, LiteralType.BOOL)
+        super().__init__(LiteralType.BOOL)
         self.bool_value = bool_value
 
     def __str__(self):
