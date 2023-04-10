@@ -66,12 +66,22 @@ class Operator(TokenKind):
 
 class KeywordType(Enum):
     CONST = auto()
-    LET = auto()
-    IN = auto()
+
+    # Visibility
+    PUB = auto()
+    USE = auto()
+
+    # Conditional
     IF = auto()
     THEN = auto
     ELSE = auto()
+
+    # Compound expressions
+    LET = auto()
+    IN = auto()
     WHERE = auto()
+
+    # Infix declarations
     INFIX = auto()
     INFIXR = auto()
     INFIXL = auto()

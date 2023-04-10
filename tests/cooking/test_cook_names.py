@@ -69,12 +69,18 @@ class TestCookNames(CookingTestCase):
     def test_cook_keywords(self):
         raw_tokens = [
             ('const', raw_token.Name()),
-            ('let', raw_token.Name()),
-            ('in', raw_token.Name()),
+
+            ('pub', raw_token.Name()),
+            ('use', raw_token.Name()),
+
             ('if', raw_token.Name()),
             ('then', raw_token.Name()),
             ('else', raw_token.Name()),
+
+            ('let', raw_token.Name()),
+            ('in', raw_token.Name()),
             ('where', raw_token.Name()),
+
             ('infix', raw_token.Name()),
             ('infixr', raw_token.Name()),
             ('infixl', raw_token.Name()),
@@ -82,12 +88,18 @@ class TestCookNames(CookingTestCase):
 
         expected_tokens = [
             ('const', cooked_token.Keyword(KeywordType.CONST)),
-            ('let', cooked_token.Keyword(KeywordType.LET)),
-            ('in', cooked_token.Keyword(KeywordType.IN)),
+
+            ('pub', cooked_token.Keyword(KeywordType.PUB)),
+            ('use', cooked_token.Keyword(KeywordType.USE)),
+
             ('if', cooked_token.Keyword(KeywordType.IF)),
             ('then', cooked_token.Keyword(KeywordType.THEN)),
             ('else', cooked_token.Keyword(KeywordType.ELSE)),
+
+            ('let', cooked_token.Keyword(KeywordType.LET)),
+            ('in', cooked_token.Keyword(KeywordType.IN)),
             ('where', cooked_token.Keyword(KeywordType.WHERE)),
+
             ('infix', cooked_token.Keyword(KeywordType.INFIX)),
             ('infixr', cooked_token.Keyword(KeywordType.INFIXR)),
             ('infixl', cooked_token.Keyword(KeywordType.INFIXL)),

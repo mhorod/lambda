@@ -171,12 +171,18 @@ def unescape(text: str) -> str:
 
 KEYWORDS = {
     'const': KeywordType.CONST,
-    'let': KeywordType.LET,
-    'in': KeywordType.IN,
+
+    'pub': KeywordType.PUB,
+    'use': KeywordType.USE,
+
     'if': KeywordType.IF,
     'then': KeywordType.THEN,
     'else': KeywordType.ELSE,
+
+    'let': KeywordType.LET,
+    'in': KeywordType.IN,
     'where': KeywordType.WHERE,
+
     'infix': KeywordType.INFIX,
     'infixr': KeywordType.INFIXR,
     'infixl': KeywordType.INFIXL,
