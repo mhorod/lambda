@@ -2,11 +2,9 @@ import unittest
 
 from lmd.util.error import ErrorReport
 from lmd.util.source import *
-from lmd.util.token import Token, TokenKind
+from lmd.util.token import Token
 
-from lmd.lexing import raw_token
 
-from lmd.cooking import tokens as cooked_token
 from lmd.cooking.cook import cook_tokens
 from lmd.cooking.error import *
 
