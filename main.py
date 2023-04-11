@@ -10,14 +10,15 @@ const w = "world"
 """
 
 source_code = """
+pub const x = 1
 const x =
     if x + y == 1 then
         if true then
             2 + (x y) $ z w * 1
         else
-            0b
+            0b0
     else
-        (_ ++ x)
+        (_ + x)
 """
 
 
@@ -79,3 +80,4 @@ pipeline = Pipeline()\
 
 parsed = pipeline.run(src, error_printer)
 ast_printer = output.ast.ASTPrinter()
+ast_printer.visit(parsed)

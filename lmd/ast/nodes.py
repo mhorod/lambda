@@ -8,6 +8,9 @@ class Node:
     def __init__(self, span: Span):
         self.span = span
 
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
 
 class ProgramNode(Node):
     def __init__(self, span: Span, statements):
@@ -25,6 +28,24 @@ class TokenNode(Node):
 
     def __repr__(self):
         return f"token ({self.token})"
+
+
+class PubNode(Node):
+    def __init__(self, span, node):
+        super().__init__(span)
+        self.node = node
+
+    def __repr__(self):
+        return f"pub ({self.node})"
+
+
+class UseNode(Node):
+    def __init__(self, span: Span, path: Node):
+        super().__init__(span)
+        self.path = path
+
+    def __repr__(self):
+        return f"use ({self.path})"
 
 
 class ConstNode(Node):

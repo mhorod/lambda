@@ -34,6 +34,12 @@ class ASTPrinter(Visitor):
         self.print(node.token)
         self.unindent()
 
+    def visit_pub_node(self, node):
+        self.print(f"{node.span} pub")
+        self.indent()
+        self.visit(node.node)
+        self.unindent()
+
     def visit_const_node(self, node):
         self.print(f"{node.span} const")
         self.indent()

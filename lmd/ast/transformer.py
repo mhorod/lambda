@@ -14,6 +14,9 @@ class ASTTransformer(Visitor):
     def visit_token_node(self, node):
         return node
 
+    def visit_pub_node(self, node):
+        return PubNode(self.visit(node.node))
+
     def visit_const_node(self, node):
         return ConstNode(node.span, self.visit(node.name), self.visit(node.value))
 
