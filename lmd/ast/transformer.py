@@ -15,7 +15,7 @@ class ASTTransformer(Visitor):
         return node
 
     def visit_pub_node(self, node):
-        return PubNode(self.visit(node.node))
+        return PubNode(node.span, self.visit(node.node))
 
     def visit_const_node(self, node):
         return ConstNode(node.span, self.visit(node.name), self.visit(node.value))

@@ -38,7 +38,7 @@ class Result:
     def Err(cursor, values, errors):
         return Result(cursor, values, errors, ParsingState.ERR)
 
-    def map(self, f):
+    def mapped(self, f):
         if self.state == ParsingState.OK:
             return Result.Ok(self.cursor, [f(self.values)], self.errors)
         else:
@@ -80,12 +80,16 @@ class Conditional(Parser):
     def parse(self, cursor: Cursor, backtrack=False) -> Result:
         condition_result = self.condition.parse(cursor.clone(), backtrack)
         if condition_result.state == ParsingState.OK:
-            then_result = self.then.parse(condition_result.cursor, backtrack)
+            then_result = self.then.parse(
+                condition_result.cursor, backtrack=False)
             then_result.values = condition_result.values + then_result.values
             then_result.errors = condition_result.errors + then_result.errors
             return then_result
         else:
             return condition_result
+
+    def __repr__(self):
+        return f'{self.condition} >> {self.then}'
 
 
 class Or(Parser):
@@ -104,6 +108,9 @@ class Or(Parser):
     def __or__(self, other):
         return Or(self.parsers + [other])
 
+    def __repr__(self):
+        return ' | '.join(map(str, self.parsers))
+
 
 class Sequential(Parser):
     def __init__(self, parsers: List[Parser]):
@@ -117,7 +124,7 @@ class Sequential(Parser):
         errors = []
         err = False
         for parser in self.parsers:
-            if err:
+            if err and not isinstance(parser, Drop):
                 values.append(None)
             else:
                 result = parser.parse(cursor.clone(), backtrack=False)
@@ -132,6 +139,9 @@ class Sequential(Parser):
             return Result.Err(cursor, values, errors)
         else:
             return Result.Ok(cursor, values, errors)
+
+    def __repr__(self):
+        return ' + '.join(map(str, self.parsers))
 
 
 class Drop(Parser):
@@ -164,13 +174,38 @@ class Repeat(Parser):
         values = []
         errors = []
         while True:
-            result = self.parser.parse(cursor.clone(), backtrack=False)
-            if result.state != ParsingState.OK:
+            result = self.parser.parse(cursor.clone(), True)
+            print(self.parser, result)
+            if result.state == ParsingState.ERR:
+                return Result.Err(result.cursor, values + result.values, errors + result.errors)
+            elif result.state == ParsingState.BACKTRACKED:
                 return Result.Ok(cursor, values, errors)
             else:
                 values += result.values
                 errors += result.errors
                 cursor = result.cursor
+
+    def __repr__(self):
+        return f'({self.parser})*'
+
+
+class Repeat1(Parser):
+    def __init__(self, parser: Parser):
+        self.parser = parser
+
+    def parse(self, cursor: Cursor, backtrack=False) -> Result:
+        result = self.parser.parse(cursor.clone(), backtrack)
+        if result.state != ParsingState.OK:
+            return result
+        else:
+            rest = Repeat(self.parser).parse(result.cursor, True)
+            result.values += rest.values
+            result.errors += rest.errors
+            result.cursor = rest.cursor
+            return result
+
+    def __repr__(self):
+        return f'({self.parser})+'
 
 
 class Do(Parser):
@@ -178,10 +213,7 @@ class Do(Parser):
         self.function = function
 
     def parse(self, cursor: Cursor, backtrack=False) -> Result:
-        result = self.function(cursor)
-        if result.state != ParsingState.ERR:
-            return result
-        elif backtrack:
-            return Result.Backtracked(cursor, [], [])
-        else:
-            return result
+        return self.function(cursor, backtrack)
+
+    def __repr__(self):
+        return f'Do({self.function.__name__})'

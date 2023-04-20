@@ -71,7 +71,9 @@ class LetNode(Node):
 
 class ExpressionNode(Node):
     def __init__(self, nodes: List[Node]):
-        super().__init__(wrapping_span([node.span for node in nodes]))
+        spans = [node.span for node in nodes if node is not None]
+        span = None if len(spans) == 0 else wrapping_span(spans)
+        super().__init__(span)
         self.nodes = nodes
 
     def __repr__(self):
