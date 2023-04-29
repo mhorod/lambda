@@ -76,6 +76,9 @@ class KeywordType(Enum):
     THEN = auto
     ELSE = auto()
 
+    # Functions
+    FN = auto()
+
     # Compound expressions
     LET = auto()
     IN = auto()
@@ -193,6 +196,7 @@ class SymbolType(Enum):
     COMMA = auto()
     DOT = auto()
     ASSIGN = auto()
+    FAT_ARROW = auto()
 
 
 class Symbol(TokenKind):

@@ -30,6 +30,15 @@ class TokenNode(Node):
         return f"token ({self.token})"
 
 
+class QualifiedIdentifierNode(Node):
+    def __init__(self, span: Span, path: List[str]):
+        super().__init__(span)
+        self.path = path
+
+    def __repr__(self):
+        return f"qualified identifier ({self.path})"
+
+
 class PubNode(Node):
     def __init__(self, span, node):
         super().__init__(span)
@@ -49,13 +58,23 @@ class UseNode(Node):
 
 
 class ConstNode(Node):
-    def __init__(self, span: Span, name: Node, value: Node):
+    def __init__(self, span: Span, names: list, value: Node):
         super().__init__(span)
-        self.name = name
+        self.names = names
         self.value = value
 
     def __repr__(self):
         return f"const ({self.name}) = ({self.value})"
+
+
+class FnNode(Node):
+    def __init__(self, span: Span, args: list, body: Node):
+        super().__init__(span)
+        self.args = args
+        self.body = body
+
+    def __repr__(self):
+        return f"fn ({self.args}) => ({self.body})"
 
 
 class LetNode(Node):

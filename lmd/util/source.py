@@ -25,6 +25,10 @@ class Source:
     def __getitem__(self, index):
         return self.text[index]
 
+    def from_file(path: str) -> 'Source':
+        with open(path, 'r') as f:
+            return Source(path, f.read())
+
 
 @dataclass
 class LineColumn:
@@ -43,6 +47,7 @@ class Span:
 
     def len(self):
         return self.end - self.begin
+
 
 def wrapping_span(spans):
     begin = min(span.begin for span in spans)

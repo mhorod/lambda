@@ -10,8 +10,10 @@ class Visitor:
         CLASS_TO_VISIT_METHOD = {
             ProgramNode: self.visit_program_node,
             TokenNode: self.visit_token_node,
+            QualifiedIdentifierNode: self.visit_qualified_identifier_node,
             PubNode: self.visit_pub_node,
             ConstNode: self.visit_const_node,
+            FnNode: self.visit_fn_node,
             LetNode: self.visit_let_node,
             ExpressionNode: self.visit_expression_node,
             ParenthesisedExpressionNode: self.visit_parenthesised_expression_node,
@@ -30,6 +32,9 @@ class Visitor:
     def visit_token_node(self, node):
         return NotImplemented
 
+    def visit_qualified_identifier_node(self, node):
+        return NotImplemented
+
     def visit_pub_node(self, node):
         return NotImplemented
 
@@ -37,6 +42,9 @@ class Visitor:
         return NotImplemented
 
     def visit_let_node(self, node):
+        return NotImplemented
+
+    def visit_fn_node(self, node):
         return NotImplemented
 
     def visit_expression_node(self, node):

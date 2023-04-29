@@ -84,7 +84,7 @@ def parse_pub(cursor: Cursor, backtrack=False) -> Result:
 
 def parse_const(cursor: Cursor, backtrack=False) -> Result:
     parser = Drop(ParseKind(Keyword(KeywordType.CONST))) \
-        >> (ParseKind(Identifier())
+        >> (Repeat1(ParseKind(Identifier())).map(lambda values: values)
             + Drop(ParseKind(Symbol(SymbolType.ASSIGN)))
             + Do(parse_expression))
     result, span = parse_with_span(parser, cursor, backtrack)
@@ -111,10 +111,11 @@ def parse_parenthesised_expression(cursor: Cursor, backtrack=False) -> Result:
 
 
 def parse_expression_term(cursor: Cursor, backtrack=False) -> Result:
-    parser = (ParseKind(Identifier()) |
+    parser = (Do(parse_qualified_identifier) |
               ParseKind(TokenKind(TokenType.LITERAL)) |
               Do(parse_parenthesised_expression) |
               Do(parse_if_expression) |
+              Do(parse_fn_expression) |
               Fail(expected_expression)
               )
     result = parser.parse(cursor, backtrack=backtrack)
@@ -129,10 +130,29 @@ def parse_if_expression(cursor: Cursor, backtrack=False) -> Result:
         Drop(ParseKind(Keyword(KeywordType.ELSE))) +\
         Do(parse_expression)
     result, span = parse_with_span(parser, cursor, backtrack)
-    print(result.values)
-
     if result.values:
         result.values = [IfNode(span, *result.values)]
+    return result
+
+
+def parse_fn_expression(cursor: Cursor, backtrack=False) -> Result:
+    parser = Drop(ParseKind(Keyword(KeywordType.FN))) >>\
+        Repeat1(Do(parse_qualified_identifier)) +\
+        Drop(ParseKind(Symbol(SymbolType.FAT_ARROW))) +\
+        Do(parse_expression)
+    result, span = parse_with_span(parser, cursor, backtrack)
+    if result.values:
+        result.values = [FnNode(span, *result.values)]
+    return result
+
+
+def parse_qualified_identifier(cursor: Cursor, backtrack=False) -> Result:
+    parser = Repeat(ParseKind(Type()) + Drop(ParseKind(Symbol(SymbolType.DOT)))) +\
+        ParseKind(Identifier())
+
+    result, span = parse_with_span(parser, cursor, backtrack)
+    if result.values:
+        result.values = [QualifiedIdentifierNode(span, result.values)]
     return result
 
 

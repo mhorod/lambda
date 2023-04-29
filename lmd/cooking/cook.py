@@ -226,6 +226,7 @@ SYMBOLS = {
     ',': SymbolType.COMMA,
     '.': SymbolType.DOT,
     '=': SymbolType.ASSIGN,
+    "=>": SymbolType.FAT_ARROW,
 }
 
 

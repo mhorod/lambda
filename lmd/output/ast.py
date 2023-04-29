@@ -34,6 +34,13 @@ class ASTPrinter(Visitor):
         self.print(node.token)
         self.unindent()
 
+    def visit_qualified_identifier_node(self, node):
+        self.print(f"{node.span} qualified identifier")
+        self.indent()
+        for n in node.path:
+            self.visit(n)
+        self.unindent()
+
     def visit_pub_node(self, node):
         self.print(f"{node.span} pub")
         self.indent()
@@ -43,7 +50,9 @@ class ASTPrinter(Visitor):
     def visit_const_node(self, node):
         self.print(f"{node.span} const")
         self.indent()
-        self.visit(node.name)
+        for n in node.names:
+            self.visit(n)
+        self.print("=")
         self.visit(node.value)
         self.unindent()
 

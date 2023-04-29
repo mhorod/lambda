@@ -62,6 +62,25 @@ class Parser(ABC):
     def __rshift__(self, other):
         return Conditional(self, other)
 
+    def map(self, f):
+        return Map(self, f)
+
+
+class Map(Parser):
+    def __init__(self, parser: Parser, f: Callable):
+        self.parser = parser
+        self.f = f
+
+    def parse(self, cursor: Cursor, backtrack=False) -> Result:
+        result = self.parser.parse(cursor, backtrack)
+        if result.state == ParsingState.OK:
+            return result.mapped(self.f)
+        else:
+            return result
+
+    def __repr__(self):
+        return f'Map({self.parser}, {self.f})'
+
 
 class Conditional(Parser):
     '''
@@ -127,7 +146,10 @@ class Sequential(Parser):
             if err and not isinstance(parser, Drop):
                 values.append(None)
             else:
-                result = parser.parse(cursor.clone(), backtrack=False)
+                result = parser.parse(cursor.clone(), backtrack=backtrack)
+                if result.state == ParsingState.BACKTRACKED:
+                    return Result.Backtracked(cursor, [], [])
+
                 values += result.values
                 errors += result.errors
                 cursor = result.cursor
@@ -175,10 +197,7 @@ class Repeat(Parser):
         errors = []
         while True:
             result = self.parser.parse(cursor.clone(), True)
-            print(self.parser, result)
-            if result.state == ParsingState.ERR:
-                return Result.Err(result.cursor, values + result.values, errors + result.errors)
-            elif result.state == ParsingState.BACKTRACKED:
+            if result.state != ParsingState.OK:
                 return Result.Ok(cursor, values, errors)
             else:
                 values += result.values
