@@ -1,1 +1,1 @@
-const f x = (fn y => y + 1) x
+const f x = (x) x

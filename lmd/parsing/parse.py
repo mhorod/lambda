@@ -137,7 +137,7 @@ def parse_if_expression(cursor: Cursor, backtrack=False) -> Result:
 
 def parse_fn_expression(cursor: Cursor, backtrack=False) -> Result:
     parser = Drop(ParseKind(Keyword(KeywordType.FN))) >>\
-        Repeat1(Do(parse_qualified_identifier)) +\
+        Repeat1(Do(parse_qualified_identifier)).map(lambda values: values) +\
         Drop(ParseKind(Symbol(SymbolType.FAT_ARROW))) +\
         Do(parse_expression)
     result, span = parse_with_span(parser, cursor, backtrack)
@@ -160,9 +160,6 @@ def parse_with_span(parser: Parser, cursor: Cursor, backtrack=False) -> Tuple[Re
     begin = cursor.peek_one().span.begin
     source = cursor.peek_one().span.source
     result = parser.parse(cursor, backtrack=backtrack)
-    if result.cursor.eof():
-        end = result.cursor.peek_one().span.end
-    else:
-        end = result.cursor.peek_one().span.begin
+    end = result.cursor.prev().span.end
     span = Span(source, begin, end)
     return result, span

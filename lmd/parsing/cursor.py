@@ -28,6 +28,9 @@ class Cursor:
     def peek(self, cnt: int = 1) -> List[Token]:
         return self.tokens[self.index:self.index + cnt]
 
+    def prev(self) -> Token:
+        return self.tokens[self.index - 1]
+
     def take_one(self) -> Token:
         result = self.peek_one()
         self.index += 1

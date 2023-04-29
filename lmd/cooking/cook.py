@@ -183,6 +183,8 @@ KEYWORDS = {
     'in': KeywordType.IN,
     'where': KeywordType.WHERE,
 
+    'fn': KeywordType.FN,
+
     'infix': KeywordType.INFIX,
     'infixr': KeywordType.INFIXR,
     'infixl': KeywordType.INFIXL,

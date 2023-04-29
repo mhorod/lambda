@@ -56,6 +56,15 @@ class ASTPrinter(Visitor):
         self.visit(node.value)
         self.unindent()
 
+    def visit_fn_node(self, node):
+        self.print(f"{node.span} fn")
+        self.indent()
+        for arg in node.args:
+            self.visit(arg)
+        self.print("=>")
+        self.visit(node.body)
+        self.unindent()
+
     def visit_let_node(self, node):
         self.print("let")
         self.indent()
