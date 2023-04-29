@@ -28,6 +28,16 @@ class ASTPrinter(Visitor):
             self.visit(n)
         self.unindent()
 
+    def visit_mod_node(self, node):
+        self.print(f"{node.span} mod")
+        self.indent()
+        self.visit(node.name)
+        self.print("{")
+        for n in node.statements:
+            self.visit(n)
+        self.print("}")
+        self.unindent()
+
     def visit_token_node(self, node):
         self.print("token")
         self.indent()
@@ -41,10 +51,23 @@ class ASTPrinter(Visitor):
             self.visit(n)
         self.unindent()
 
+    def visit_qualified_type_node(self, node):
+        self.print(f"{node.span} qualified type")
+        self.indent()
+        for n in node.path:
+            self.visit(n)
+        self.unindent()
+
     def visit_pub_node(self, node):
         self.print(f"{node.span} pub")
         self.indent()
         self.visit(node.node)
+        self.unindent()
+
+    def visit_use_node(self, node):
+        self.print(f"{node.span} use")
+        self.indent()
+        self.visit(node.path)
         self.unindent()
 
     def visit_const_node(self, node):

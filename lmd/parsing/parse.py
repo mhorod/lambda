@@ -65,8 +65,26 @@ def parse_program(cursor: Cursor) -> Result:
     return result
 
 
+def parse_mod(cursor: Cursor, backtrack=False) -> Result:
+    parser = Drop(ParseKind(Keyword(KeywordType.MOD))) \
+        >> (Do(parse_qualified_type) +
+            Drop(ParseKind(OpenDelimiter(DelimiterType.BRACE))) +
+            Repeat(Do(parse_statement)).map(lambda x: x) +
+            Drop(ParseKind(CloseDelimiter(DelimiterType.BRACE)))
+            )
+    result, span = parse_with_span(parser, cursor, backtrack)
+    result = result.mapped(lambda values: ModNode(span, *values))
+    return result
+
+
 def parse_statement(cursor: Cursor, backtrack=False) -> Result:
-    parser = Do(parse_const) | Do(parse_pub) | Fail(expected_statement)
+    parser = (
+        Do(parse_const) |
+        Do(parse_pub) |
+        Do(parse_mod) |
+        Do(parse_use) |
+        Fail(expected_statement)
+    )
     return parser.parse(cursor, backtrack)
 
 
@@ -89,6 +107,14 @@ def parse_const(cursor: Cursor, backtrack=False) -> Result:
             + Do(parse_expression))
     result, span = parse_with_span(parser, cursor, backtrack)
     result = result.mapped(lambda values: ConstNode(span, *values))
+    return result
+
+
+def parse_use(cursor: Cursor, backtrack=False) -> Result:
+    parser = Drop(ParseKind(Keyword(KeywordType.USE))
+                  ) >> Do(parse_qualified_type)
+    result, span = parse_with_span(parser, cursor, backtrack)
+    result = result.mapped(lambda values: UseNode(span, *values))
     return result
 
 
@@ -153,6 +179,16 @@ def parse_qualified_identifier(cursor: Cursor, backtrack=False) -> Result:
     result, span = parse_with_span(parser, cursor, backtrack)
     if result.values:
         result.values = [QualifiedIdentifierNode(span, result.values)]
+    return result
+
+
+def parse_qualified_type(cursor: Cursor, backtrack=False) -> Result:
+    parser = Repeat(ParseKind(Type()) + Drop(ParseKind(Symbol(SymbolType.DOT)))) +\
+        ParseKind(Type())
+
+    result, span = parse_with_span(parser, cursor, backtrack)
+    if result.values:
+        result.values = [QualifiedTypeNode(span, result.values)]
     return result
 
 

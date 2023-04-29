@@ -1,1 +1,3 @@
-const f x = (x) x
+mod B {
+  const f x = (x) x
+}

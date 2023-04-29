@@ -9,9 +9,12 @@ class Visitor:
     def visit(self, node):
         CLASS_TO_VISIT_METHOD = {
             ProgramNode: self.visit_program_node,
+            ModNode: self.visit_mod_node,
             TokenNode: self.visit_token_node,
             QualifiedIdentifierNode: self.visit_qualified_identifier_node,
+            QualifiedTypeNode: self.visit_qualified_type_node,
             PubNode: self.visit_pub_node,
+            UseNode: self.visit_use_node,
             ConstNode: self.visit_const_node,
             FnNode: self.visit_fn_node,
             LetNode: self.visit_let_node,
@@ -29,13 +32,22 @@ class Visitor:
     def visit_program_node(self, node):
         return NotImplemented
 
+    def visit_mod_node(self, node):
+        return NotImplemented
+
     def visit_token_node(self, node):
         return NotImplemented
 
     def visit_qualified_identifier_node(self, node):
         return NotImplemented
 
+    def visit_qualified_type_node(self, node):
+        return NotImplemented
+
     def visit_pub_node(self, node):
+        return NotImplemented
+
+    def visit_use_node(self, node):
         return NotImplemented
 
     def visit_const_node(self, node):

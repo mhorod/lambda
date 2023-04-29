@@ -70,6 +70,7 @@ class KeywordType(Enum):
     # Visibility
     PUB = auto()
     USE = auto()
+    MOD = auto()
 
     # Conditional
     IF = auto()

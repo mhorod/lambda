@@ -174,6 +174,7 @@ KEYWORDS = {
 
     'pub': KeywordType.PUB,
     'use': KeywordType.USE,
+    'mod': KeywordType.MOD,
 
     'if': KeywordType.IF,
     'then': KeywordType.THEN,

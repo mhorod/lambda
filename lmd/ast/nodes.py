@@ -21,6 +21,16 @@ class ProgramNode(Node):
         return f"program ({self.statements})"
 
 
+class ModNode(Node):
+    def __init__(self, span: Span, name: Node, statements):
+        super().__init__(span)
+        self.name = name
+        self.statements = statements
+
+    def __repr__(self):
+        return f"mod ({self.name}) ({self.statements})"
+
+
 class TokenNode(Node):
     def __init__(self, token: Token):
         super().__init__(token.span)
@@ -37,6 +47,15 @@ class QualifiedIdentifierNode(Node):
 
     def __repr__(self):
         return f"qualified identifier ({self.path})"
+
+
+class QualifiedTypeNode(Node):
+    def __init__(self, span: Span, path: List[str]):
+        super().__init__(span)
+        self.path = path
+
+    def __repr__(self):
+        return f"qualified type ({self.path})"
 
 
 class PubNode(Node):
@@ -64,7 +83,7 @@ class ConstNode(Node):
         self.value = value
 
     def __repr__(self):
-        return f"const ({self.name}) = ({self.value})"
+        return f"const ({self.names}) = ({self.value})"
 
 
 class FnNode(Node):

@@ -1,1 +1,3 @@
+use B
+
 const x = M.f 1
