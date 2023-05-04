@@ -1,3 +1,7 @@
 use B
 
 const x = M.f 1
+
+mod X {
+  const x y = 2
+}

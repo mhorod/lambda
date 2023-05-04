@@ -11,14 +11,29 @@ class ASTTransformer(Visitor):
     def visit_program_node(self, node):
         return ProgramNode(node.span, [self.visit(statement) for statement in node.statements])
 
+    def visit_mod_node(self, node):
+        return ModNode(node.span, self.visit(node.name), [self.visit(statement) for statement in node.statements])
+
     def visit_token_node(self, node):
         return node
+
+    def visit_qualified_identifier_node(self, node):
+        return QualifiedIdentifierNode(node.span, [self.visit(name) for name in node.path])
+
+    def visit_qualified_type_node(self, node):
+        return QualifiedTypeNode(node.span, [self.visit(name) for name in node.path])
 
     def visit_pub_node(self, node):
         return PubNode(node.span, self.visit(node.node))
 
+    def visit_use_node(self, node):
+        return UseNode(node.span, self.visit(node.path))
+
     def visit_const_node(self, node):
-        return ConstNode(node.span, self.visit(node.name), self.visit(node.value))
+        return ConstNode(node.span, [self.visit(name) for name in node.names], self.visit(node.value))
+
+    def visit_fn_node(self, node):
+        return FnNode(node.span, [self.visit(arg) for arg in node.args], self.visit(node.body))
 
     def visit_let_node(self, node):
         return LetNode(node.span, self.visit(node.name), self.visit(node.value), self.visit(node.body))

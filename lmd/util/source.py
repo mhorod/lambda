@@ -19,6 +19,21 @@ class Source:
         column = index - self.prefix_sums[line]
         return line, column
 
+    def split_span(self, begin, end):
+        begin_line, begin_column = self.index_to_line_and_column(begin)
+        end_line, end_column = self.index_to_line_and_column(end)
+
+        if begin_line == end_line:
+            return [Span(self, begin, end)]
+
+        spans = []
+        spans.append(Span(self, begin, self.prefix_sums[begin_line + 1] - 1))
+        for line in range(begin_line + 1, end_line):
+            spans.append(
+                Span(self, self.prefix_sums[line], self.prefix_sums[line + 1] - 1))
+        spans.append(Span(self, self.prefix_sums[end_line], end))
+        return spans
+
     def len(self):
         return len(self.text)
 
@@ -47,6 +62,9 @@ class Span:
 
     def len(self):
         return self.end - self.begin
+
+    def split(self):
+        return self.source.split_span(self.begin, self.end)
 
 
 def wrapping_span(spans):

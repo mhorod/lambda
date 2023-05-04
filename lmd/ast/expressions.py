@@ -15,6 +15,7 @@ class Associativity(Enum):
 
 @dataclass
 class Precedence:
+    # Higher priority means tighter binding, i.e. multiplication has higher priority than addition
     priority: int
     associativity: Associativity
 
@@ -98,3 +99,18 @@ class ExpressionTransformer(ASTTransformer):
         error = Error(message)
         self.error_report.add(error)
         self.failed = True
+
+
+BUILT_IN_PRECEDENCE_TABLE = {
+    '+': Precedence(6, Associativity.LEFT),
+    '-': Precedence(6, Associativity.LEFT),
+    '*': Precedence(7, Associativity.LEFT),
+    '/': Precedence(7, Associativity.LEFT),
+    '%': Precedence(7, Associativity.LEFT),
+    '**': Precedence(8, Associativity.RIGHT),
+}
+
+
+def transform_expressions(program_module_tree, ast, report):
+    transformer = ExpressionTransformer(BUILT_IN_PRECEDENCE_TABLE)
+    return transformer.transform(ast, report)

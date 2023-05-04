@@ -30,49 +30,68 @@ class Visitor:
             return self.visit_unknown_node(node)
 
     def visit_program_node(self, node):
-        return NotImplemented
+        for statement in node.statements:
+            self.visit(statement)
 
     def visit_mod_node(self, node):
-        return NotImplemented
+        self.visit(node.name)
+        for statement in node.statements:
+            self.visit(statement)
 
     def visit_token_node(self, node):
         return NotImplemented
 
     def visit_qualified_identifier_node(self, node):
-        return NotImplemented
+        for part in node.path:
+            self.visit(part)
 
     def visit_qualified_type_node(self, node):
-        return NotImplemented
+        for part in node.path:
+            self.visit(part)
 
     def visit_pub_node(self, node):
-        return NotImplemented
+        self.visit(node.node)
 
     def visit_use_node(self, node):
-        return NotImplemented
+        self.visit(node.path)
 
     def visit_const_node(self, node):
-        return NotImplemented
+        for name in node.names:
+            self.visit(name)
+        self.visit(node.value)
 
     def visit_let_node(self, node):
-        return NotImplemented
+        self.visit(node.name)
+        self.visit(node.value)
+        self.visit(node.body)
 
     def visit_fn_node(self, node):
-        return NotImplemented
+        self.visit(node.name)
+        for param in node.params:
+            self.visit(param)
+        self.visit(node.body)
 
     def visit_expression_node(self, node):
-        return NotImplemented
+        for node in node.nodes:
+            self.visit(node)
 
     def visit_parenthesised_expression_node(self, node):
-        return NotImplemented
+        self.visit(node.expression)
 
     def visit_binary_expression_node(self, node):
-        return NotImplemented
+        self.visit(node.left)
+        self.visit(node.operator)
+        self.visit(node.right)
 
     def visit_function_call_node(self, node):
-        return NotImplemented
+        self.visit(node.function)
+        for arg in node.arguments:
+            self.visit(arg)
 
     def visit_if_node(self, node):
-        return NotImplemented
+        self.visit(node.condition)
+        self.visit(node.then_branch)
+        self.visit(node.else_branch)
 
     def visit_unknown_node(self, node):
         return NotImplemented

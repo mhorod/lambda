@@ -19,18 +19,24 @@ class SimpleErrorPrinter:
             self.print_messages([Message(span, "")])
 
     def print_messages(self, messages):
-        lines = [message.span.source.index_to_line_and_column(
-            message.span.begin)[0] for message in messages]
+        spans = sum([message.span.split() for message in messages], [])
+        lines = [span.source.index_to_line_and_column(
+            span.begin)[0] + 1 for span in spans]
         max_line_length = len(str(max(lines)))
         for message in messages:
-            line_number, column = message.span.source.index_to_line_and_column(
-                message.span.begin)
-            line = message.span.source.lines[line_number]
-            prefix = f"{line_number + 1:>{max_line_length}} | "
-
-            underline = " " * (len(prefix) + column) + "^" * message.span.len()
-            print(prefix + line)
-            print(underline)
+            spans = message.span.split()
+            for i, span in enumerate(spans):
+                line_number, column = span.source.index_to_line_and_column(
+                    span.begin)
+                line = span.source.lines[line_number]
+                prefix = f"{line_number + 1:>{max_line_length}} | "
+                if i + 1 < len(spans):
+                    underline_prefix = " " * max_line_length + " | " + " " * column
+                else:
+                    underline_prefix = " " * (len(prefix) + column)
+                underline = underline_prefix + "^" * span.len()
+                print(prefix + line)
+                print(underline)
 
     def print_error_report(self, error_report):
         for error in error_report.errors:

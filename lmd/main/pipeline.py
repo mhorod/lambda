@@ -6,7 +6,9 @@ from lmd.util.error import ErrorReport
 from lmd.lexing import lex
 from lmd.cooking import cook, tokens
 from lmd.parsing import parse
+from lmd.modules import module_tree
 from lmd.output.ast import *
+from lmd.ast import expressions
 
 
 def run_pipeline(srcs, pipeline):
@@ -41,14 +43,37 @@ def parse_tokens(srcs, report):
             for cooked_tokens in srcs]
 
 
+def build_module_tree(asts, report):
+    program_module_tree = {}
+    for ast in asts:
+        tree = module_tree.build_module_tree(ast)
+        program_module_tree = module_tree.merge_trees(
+            program_module_tree, tree)
+    module_tree.report_multiple_definitions(program_module_tree, report)
+    return program_module_tree, asts
+
+
+def transform_expressions(asts, report):
+    program_module_tree, asts = asts
+    asts = [
+        expressions.transform_expressions(program_module_tree, ast, report)
+        for ast in asts
+    ]
+    return program_module_tree, asts
+
+
 def interpret_sources(sources: List[Source]):
     pipeline = [
         lex_srcs,
         cook_tokens,
         filter_whitespace,
-        parse_tokens
+        parse_tokens,
+        build_module_tree,
+        transform_expressions,
     ]
 
-    asts = run_pipeline(sources, pipeline)
+    tree, asts = run_pipeline(sources, pipeline)
+
+    printer = ASTPrinter()
     for ast in asts:
-        ASTPrinter().visit(ast)
+        printer.visit(ast)

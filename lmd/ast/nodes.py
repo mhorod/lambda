@@ -17,7 +17,7 @@ class ProgramNode(Node):
         super().__init__(span)
         self.statements = statements
 
-    def __repr__(self):
+    def __str__(self):
         return f"program ({self.statements})"
 
 
@@ -27,7 +27,7 @@ class ModNode(Node):
         self.name = name
         self.statements = statements
 
-    def __repr__(self):
+    def __str__(self):
         return f"mod ({self.name}) ({self.statements})"
 
 
@@ -36,25 +36,25 @@ class TokenNode(Node):
         super().__init__(token.span)
         self.token = token
 
-    def __repr__(self):
+    def __str__(self):
         return f"token ({self.token})"
 
 
 class QualifiedIdentifierNode(Node):
-    def __init__(self, span: Span, path: List[str]):
+    def __init__(self, span: Span, path: List[Node]):
         super().__init__(span)
         self.path = path
 
-    def __repr__(self):
+    def __str__(self):
         return f"qualified identifier ({self.path})"
 
 
 class QualifiedTypeNode(Node):
-    def __init__(self, span: Span, path: List[str]):
+    def __init__(self, span: Span, path: List[Node]):
         super().__init__(span)
         self.path = path
 
-    def __repr__(self):
+    def __str__(self):
         return f"qualified type ({self.path})"
 
 
@@ -63,7 +63,7 @@ class PubNode(Node):
         super().__init__(span)
         self.node = node
 
-    def __repr__(self):
+    def __str__(self):
         return f"pub ({self.node})"
 
 
@@ -72,7 +72,7 @@ class UseNode(Node):
         super().__init__(span)
         self.path = path
 
-    def __repr__(self):
+    def __str__(self):
         return f"use ({self.path})"
 
 
@@ -82,7 +82,7 @@ class ConstNode(Node):
         self.names = names
         self.value = value
 
-    def __repr__(self):
+    def __str__(self):
         return f"const ({self.names}) = ({self.value})"
 
 
@@ -92,7 +92,7 @@ class FnNode(Node):
         self.args = args
         self.body = body
 
-    def __repr__(self):
+    def __str__(self):
         return f"fn ({self.args}) => ({self.body})"
 
 
@@ -103,7 +103,7 @@ class LetNode(Node):
         self.value = value
         self.body = body
 
-    def __repr__(self):
+    def __str__(self):
         return f"let ({self.name}) = ({self.value}) in ({self.body})"
 
 
@@ -114,7 +114,7 @@ class ExpressionNode(Node):
         super().__init__(span)
         self.nodes = nodes
 
-    def __repr__(self):
+    def __str__(self):
         return f"expr ({self.nodes})"
 
 
@@ -123,7 +123,7 @@ class ParenthesisedExpressionNode(Node):
         super().__init__(span)
         self.expression = expression
 
-    def __repr__(self):
+    def __str__(self):
         return f"paren_expr ({self.expression})"
 
 
