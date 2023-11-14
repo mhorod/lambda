@@ -9,6 +9,7 @@ from lmd.parsing import parse
 from lmd.modules import module_tree
 from lmd.output.ast import *
 from lmd.ast import expressions
+from lmd.semantic_analysis import semantic_analysis
 
 
 def run_pipeline(srcs, pipeline):
@@ -54,13 +55,15 @@ def build_module_tree(asts, report):
 
 
 def transform_expressions(asts, report):
-    program_module_tree, asts = asts
     asts = [
-        expressions.transform_expressions(program_module_tree, ast, report)
+        expressions.transform_expressions(ast, report)
         for ast in asts
     ]
-    return program_module_tree, asts
+    return asts
 
+def analyse_semantics(asts, report):
+    semantic_analysis.analyse_semantics(asts, report)
+    return asts
 
 def interpret_sources(sources: List[Source]):
     pipeline = [
@@ -68,11 +71,11 @@ def interpret_sources(sources: List[Source]):
         cook_tokens,
         filter_whitespace,
         parse_tokens,
-        build_module_tree,
         transform_expressions,
+        analyse_semantics
     ]
 
-    tree, asts = run_pipeline(sources, pipeline)
+    asts = run_pipeline(sources, pipeline)
 
     printer = ASTPrinter()
     for ast in asts:

@@ -11,7 +11,6 @@ class Node:
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
 
-
 class ProgramNode(Node):
     def __init__(self, span: Span, statements):
         super().__init__(span)
@@ -46,7 +45,8 @@ class QualifiedIdentifierNode(Node):
         self.path = path
 
     def __str__(self):
-        return f"qualified identifier ({self.path})"
+        path_str = ".".join([str(part) for part in self.path])
+        return f"qualified identifier ({path_str})"
 
 
 class QualifiedTypeNode(Node):
@@ -81,6 +81,9 @@ class ConstNode(Node):
         super().__init__(span)
         self.names = names
         self.value = value
+
+    def name(self):
+        return self.names[0].token.text
 
     def __str__(self):
         return f"const ({self.names}) = ({self.value})"

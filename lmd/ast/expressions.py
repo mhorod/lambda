@@ -111,6 +111,6 @@ BUILT_IN_PRECEDENCE_TABLE = {
 }
 
 
-def transform_expressions(program_module_tree, ast, report):
+def transform_expressions(ast, report):
     transformer = ExpressionTransformer(BUILT_IN_PRECEDENCE_TABLE)
     return transformer.transform(ast, report)

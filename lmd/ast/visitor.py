@@ -39,7 +39,7 @@ class Visitor:
             self.visit(statement)
 
     def visit_token_node(self, node):
-        return NotImplemented
+        return node
 
     def visit_qualified_identifier_node(self, node):
         for part in node.path:
